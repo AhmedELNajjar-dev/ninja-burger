@@ -49,10 +49,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: authError.message }, { status: 400 })
     }
 
-    // Insert profile row
+    // Upsert profile row (handles case where handle_new_user trigger already inserted a row)
     const { error: profileError } = await adminClient
       .from('profiles')
-      .insert({
+      .upsert({
         id: authData.user.id,
         full_name,
         phone,
@@ -60,10 +60,11 @@ export async function POST(request: NextRequest) {
       })
 
     if (profileError) {
+      console.error('[Register] profileError:', profileError)
       // Rollback: delete the created auth user
       await adminClient.auth.admin.deleteUser(authData.user.id)
       return NextResponse.json(
-        { error: 'حدث خطأ في إنشاء الحساب' },
+        { error: profileError.message || 'حدث خطأ في إنشاء الحساب' },
         { status: 500 }
       )
     }
