@@ -8,7 +8,8 @@ import { cn } from './cn';
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
-interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'size'> {
+interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'size' | 'children'> {
+  children?: React.ReactNode;
   variant?: ButtonVariant;
   size?: ButtonSize;
   isLoading?: boolean;

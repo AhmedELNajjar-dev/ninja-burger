@@ -6,7 +6,11 @@ import { ShoppingCart, Menu, User } from 'lucide-react';
 import { cn } from './ui/cn';
 import { useCartStore } from '@/store/cartStore';
 
-export function Navbar() {
+interface NavbarProps {
+  profile?: any;
+}
+
+export function Navbar({ profile }: NavbarProps = {}) {
   const [isScrolled, setIsScrolled] = useState(false);
   const items = useCartStore((state) => state.items);
   const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
@@ -67,3 +71,5 @@ export function Navbar() {
     </header>
   );
 }
+
+export default Navbar;

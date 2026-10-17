@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import CategoryTabs from '@/components/menu/CategoryTabs'
-import MenuGrid from '@/components/menu/MenuGrid'
+import { CategoryTabs } from '@/components/menu/CategoryTabs'
+import { MenuGrid } from '@/components/menu/MenuGrid'
 import type { Category, MenuItem, Addon } from '@/types'
 
 interface HomeClientProps {

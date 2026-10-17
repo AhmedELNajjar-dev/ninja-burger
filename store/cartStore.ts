@@ -8,6 +8,7 @@ import type { CartItem, ItemSize, SelectedAddon } from '@/types'
 interface CartState {
   items: CartItem[]
   isOpen: boolean
+  isCartOpen: boolean
   isCheckoutOpen: boolean
 
   // Actions
@@ -30,6 +31,7 @@ interface CartState {
   // Computed helpers (use as selectors)
   totalItems: () => number
   totalAmount: () => number
+  getTotal: () => number
 }
 
 function computeLineTotal(unitPrice: number, addons: SelectedAddon[], quantity: number) {
@@ -42,6 +44,7 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
       isOpen: false,
+      isCartOpen: false,
       isCheckoutOpen: false,
 
       addItem: ({ menuItemId, name_ar, name_en, size, unitPrice, addons }) => {
@@ -110,13 +113,14 @@ export const useCartStore = create<CartState>()(
 
       clearCart: () => set({ items: [] }),
 
-      openCart: () => set({ isOpen: true }),
-      closeCart: () => set({ isOpen: false }),
-      openCheckout: () => set({ isCheckoutOpen: true, isOpen: false }),
+      openCart: () => set({ isOpen: true, isCartOpen: true }),
+      closeCart: () => set({ isOpen: false, isCartOpen: false }),
+      openCheckout: () => set({ isCheckoutOpen: true, isOpen: false, isCartOpen: false }),
       closeCheckout: () => set({ isCheckoutOpen: false }),
 
       totalItems: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
       totalAmount: () => get().items.reduce((sum, i) => sum + i.lineTotal, 0),
+      getTotal: () => get().items.reduce((sum, i) => sum + i.lineTotal, 0),
     }),
     {
       name: 'ninja-burger-cart',

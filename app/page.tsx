@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import Navbar from '@/components/Navbar'
-import CategoryTabs from '@/components/menu/CategoryTabs'
-import MenuGrid from '@/components/menu/MenuGrid'
-import CartDrawer from '@/components/cart/CartDrawer'
-import CheckoutModal from '@/components/cart/CheckoutModal'
+import { Navbar } from '@/components/Navbar'
+import { CartDrawer } from '@/components/cart/CartDrawer'
+import { CheckoutModal } from '@/components/cart/CheckoutModal'
 import HomeHero from '@/components/HomeHero'
 import type { Category, MenuItem, Addon, Profile } from '@/types'
 

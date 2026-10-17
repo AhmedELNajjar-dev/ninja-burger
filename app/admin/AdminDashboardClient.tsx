@@ -14,8 +14,8 @@ import {
   Bell,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import OrderCard from '@/components/admin/OrderCard'
-import NewOrderAlert from '@/components/admin/NewOrderAlert'
+import { OrderCard } from '@/components/admin/OrderCard'
+import { NewOrderAlert } from '@/components/admin/NewOrderAlert'
 import type { Order, OrderStatus, Profile } from '@/types'
 
 interface Props {
@@ -270,7 +270,7 @@ export default function AdminDashboardClient({ initialOrders, adminProfile }: Pr
                       : 'bg-gray-100 text-gray-500'
                   }`}
                 >
-                  {orders.filter((o) => value === 'all' || o.status === value).length}
+                  {orders.filter((o) => o.status === value).length}
                 </span>
               )}
             </button>

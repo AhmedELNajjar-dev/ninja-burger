@@ -20,10 +20,10 @@ export function MenuCard({ item, addons }: MenuCardProps) {
   const [isAdded, setIsAdded] = useState(false);
 
   const sizes: { size: ItemSize; price: number | null }[] = [
-    { size: 'single', price: item.price_single },
-    { size: 'double', price: item.price_double },
-    { size: 'triple', price: item.price_triple },
-  ].filter(s => s.price !== null);
+    { size: 'single' as ItemSize, price: item.price_single },
+    { size: 'double' as ItemSize, price: item.price_double },
+    { size: 'triple' as ItemSize, price: item.price_triple },
+  ].filter((s): s is { size: ItemSize; price: number } => s.price !== null);
 
   const toggleAddon = (id: string) => {
     const newSet = new Set(selectedAddons);
