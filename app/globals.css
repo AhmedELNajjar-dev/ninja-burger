@@ -1,0 +1,183 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Base ──────────────────────────────────────────────────────────────── */
+
+@layer base {
+  :root {
+    --ninja-red: #CC1F1A;
+    --ninja-yellow: #F5A623;
+    --ninja-dark: #1A1A1A;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-white text-ninja-dark antialiased;
+    font-family: 'Cairo', sans-serif;
+  }
+
+  /* RTL-friendly text alignment */
+  [dir="rtl"] {
+    text-align: right;
+  }
+}
+
+/* ─── Custom Scrollbar ──────────────────────────────────────────────────── */
+
+@layer utilities {
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Thin red scrollbar for specific containers */
+  .scrollbar-ninja::-webkit-scrollbar {
+    width: 4px;
+  }
+  .scrollbar-ninja::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  .scrollbar-ninja::-webkit-scrollbar-thumb {
+    background: var(--ninja-red);
+    border-radius: 10px;
+  }
+
+  /* Text gradient */
+  .text-gradient-ninja {
+    background: linear-gradient(135deg, #CC1F1A, #F5A623);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Glass morphism card */
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-card;
+  }
+
+  /* Prevent layout shift during font load */
+  .font-loading {
+    visibility: hidden;
+  }
+
+  /* Skip to main content link */
+  .skip-link {
+    @apply absolute -top-10 right-0 bg-ninja-red text-white px-4 py-2 z-50;
+    transition: top 0.2s;
+  }
+  .skip-link:focus {
+    @apply top-0;
+  }
+}
+
+/* ─── Component Classes ─────────────────────────────────────────────────── */
+
+@layer components {
+  /* ── Buttons ── */
+  .btn-primary {
+    @apply bg-ninja-red text-white font-bold px-6 py-3 rounded-xl
+           hover:bg-ninja-red-dark active:scale-95
+           transition-all duration-200 shadow-ninja
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100
+           focus:outline-none focus:ring-2 focus:ring-ninja-red focus:ring-offset-2;
+  }
+
+  .btn-secondary {
+    @apply bg-ninja-yellow text-white font-bold px-6 py-3 rounded-xl
+           hover:bg-ninja-yellow-dark active:scale-95
+           transition-all duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100
+           focus:outline-none focus:ring-2 focus:ring-ninja-yellow focus:ring-offset-2;
+  }
+
+  .btn-outline {
+    @apply border-2 border-ninja-red text-ninja-red font-bold px-6 py-3 rounded-xl
+           hover:bg-ninja-red hover:text-white active:scale-95
+           transition-all duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100
+           focus:outline-none focus:ring-2 focus:ring-ninja-red focus:ring-offset-2;
+  }
+
+  .btn-ghost {
+    @apply text-ninja-dark font-semibold px-4 py-2 rounded-lg
+           hover:bg-gray-100 active:scale-95
+           transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-gray-300;
+  }
+
+  /* ── Form Inputs ── */
+  .input-field {
+    @apply w-full px-4 py-3 border-2 border-gray-200 rounded-xl
+           text-ninja-dark placeholder-gray-400
+           focus:outline-none focus:border-ninja-red focus:ring-2 focus:ring-ninja-red/20
+           transition-all duration-200 bg-white
+           disabled:bg-gray-50 disabled:cursor-not-allowed;
+  }
+
+  .input-field-error {
+    @apply border-red-400 focus:border-red-500 focus:ring-red-200;
+  }
+
+  /* ── Cards ── */
+  .menu-card {
+    @apply bg-white rounded-2xl overflow-hidden shadow-card
+           hover:shadow-card-hover transition-all duration-300
+           border border-gray-100;
+  }
+
+  .order-card {
+    @apply bg-white rounded-2xl p-5 shadow-card border border-gray-100
+           transition-all duration-200;
+  }
+
+  /* ── Status badges ── */
+  .status-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full
+           text-sm font-semibold border;
+  }
+
+  /* ── Section heading ── */
+  .section-title {
+    @apply text-2xl font-extrabold text-ninja-dark;
+  }
+
+  /* ── Cart item ── */
+  .cart-item {
+    @apply flex items-center gap-3 py-3 border-b border-gray-100 last:border-0;
+  }
+
+  /* ── Overlay backdrop ── */
+  .overlay {
+    @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-40;
+  }
+}
+
+/* ─── Framer Motion Helpers ─────────────────────────────────────────────── */
+
+/* Prevent flash of unstyled content during motion */
+[data-framer-motion] {
+  will-change: transform, opacity;
+}
+
+/* ─── Print Styles ──────────────────────────────────────────────────────── */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
