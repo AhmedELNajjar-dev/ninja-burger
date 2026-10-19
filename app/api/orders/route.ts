@@ -21,6 +21,18 @@ export async function POST(request: NextRequest) {
     // Get current user (optional — guest checkout allowed)
     const { data: { user } } = await supabase.auth.getUser()
 
+    let isPhoneVerified = false
+    if (user) {
+      const { data: profile } = await adminClient
+        .from('profiles')
+        .select('is_phone_verified')
+        .eq('id', user.id)
+        .maybeSingle()
+      if (profile?.is_phone_verified) {
+        isPhoneVerified = true
+      }
+    }
+
     const { customer_name, customer_phone, delivery_address, notes, items, total_amount } = result.data
 
     // Insert order using admin client (bypasses RLS for INSERT)
@@ -35,6 +47,7 @@ export async function POST(request: NextRequest) {
         items,
         total_amount,
         status: 'pending',
+        is_phone_verified: isPhoneVerified,
       })
       .select()
       .single()

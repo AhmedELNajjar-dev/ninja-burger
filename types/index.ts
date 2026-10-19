@@ -6,6 +6,8 @@ export interface Profile {
   phone: string
   role: 'customer' | 'admin'
   cart?: CartItem[]
+  is_phone_verified?: boolean
+  phone_verification_code?: string | null
   created_at: string
 }
 
@@ -120,6 +122,7 @@ export interface Order {
   total_amount: number
   status: OrderStatus
   discord_notified: boolean
+  is_phone_verified?: boolean
   created_at: string
 }
 

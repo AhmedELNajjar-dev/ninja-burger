@@ -95,6 +95,7 @@ export default async function HomePage({
       <CheckoutModal
         userName={profile?.full_name}
         userPhone={profile?.phone}
+        isPhoneVerified={profile?.is_phone_verified}
       />
     </div>
   )

@@ -50,10 +50,19 @@ export function OrderCard({ order, onStatusChange, isNew }: OrderCardProps) {
       </div>
 
       <div className="space-y-2 mb-4 bg-gray-50 rounded-xl p-3">
-        <div className="flex items-center gap-2 text-gray-700">
+        <div className="flex items-center gap-2 text-gray-700 flex-wrap">
           <div className="w-6 flex justify-center"><Phone className="w-4 h-4 text-gray-400" /></div>
           <span className="font-bold">{order.customer_name}</span>
-          <span className="text-sm" dir="ltr">{order.customer_phone}</span>
+          <span className="text-sm font-mono" dir="ltr">{order.customer_phone}</span>
+          {order.is_phone_verified ? (
+            <span className="inline-flex items-center gap-1 text-[11px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full border border-emerald-200">
+              <span>💬</span> موثق واتساب
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-[11px] bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">
+              غير موثق
+            </span>
+          )}
         </div>
         <div className="flex items-start gap-2 text-gray-700">
           <div className="w-6 flex justify-center mt-1"><MapPin className="w-4 h-4 text-gray-400" /></div>

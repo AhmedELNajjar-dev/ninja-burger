@@ -8,6 +8,8 @@ CREATE TABLE public.profiles (
   phone text UNIQUE NOT NULL,
   role text NOT NULL DEFAULT 'customer' CHECK (role IN ('customer', 'admin')),
   cart jsonb NOT NULL DEFAULT '[]'::jsonb,
+  is_phone_verified boolean NOT NULL DEFAULT false,
+  phone_verification_code text,
   created_at timestamptz DEFAULT now()
 );
 

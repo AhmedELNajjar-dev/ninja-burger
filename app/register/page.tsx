@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { motion } from 'framer-motion'
-import { Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { Eye, EyeOff, AlertCircle, CheckCircle2, MessageCircle, ArrowLeft } from 'lucide-react'
 
 const egyptianPhone = /^(\+?2)?0(10|11|12|15)[0-9]{8}$/
 
@@ -60,7 +60,15 @@ export default function RegisterPage() {
   const [showConfirm, setShowConfirm] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
+  
+  // Verification Step state
+  const [registeredPhone, setRegisteredPhone] = useState('')
+  const [showVerificationStep, setShowVerificationStep] = useState(false)
+  const [whatsappUrl, setWhatsappUrl] = useState('')
+  const [otpCode, setOtpCode] = useState('')
+  const [isVerifying, setIsVerifying] = useState(false)
+  const [verifyError, setVerifyError] = useState<string | null>(null)
+  const [isVerifiedSuccess, setIsVerifiedSuccess] = useState(false)
 
   const {
     register,
@@ -94,13 +102,57 @@ export default function RegisterPage() {
         return
       }
 
-      setSuccess(true)
-      // Redirect to login after 2 seconds
-      setTimeout(() => router.push('/login'), 2000)
+      setRegisteredPhone(data.phone)
+
+      // Request WhatsApp verification code immediately
+      const verifyRes = await fetch('/api/auth/verify-phone/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: data.phone }),
+      })
+      const verifyJson = await verifyRes.json()
+
+      if (verifyRes.ok && verifyJson.whatsappUrl) {
+        setWhatsappUrl(verifyJson.whatsappUrl)
+      }
+
+      setShowVerificationStep(true)
     } catch {
       setServerError('حدث خطأ في الاتصال بالخادم')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleVerifyOtp = async () => {
+    if (!otpCode || otpCode.length !== 4) {
+      setVerifyError('يرجى إدخال الرمز المكون من 4 أرقام')
+      return
+    }
+
+    setIsVerifying(true)
+    setVerifyError(null)
+
+    try {
+      const res = await fetch('/api/auth/verify-phone/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: otpCode, phone: registeredPhone }),
+      })
+
+      const json = await res.json()
+
+      if (!res.ok) {
+        setVerifyError(json.error || 'رمز التأكيد غير صحيح')
+        return
+      }
+
+      setIsVerifiedSuccess(true)
+      setTimeout(() => router.push('/login'), 2000)
+    } catch {
+      setVerifyError('فشل التحقق من الرمز')
+    } finally {
+      setIsVerifying(false)
     }
   }
 
@@ -131,20 +183,86 @@ export default function RegisterPage() {
           </div>
 
           <div className="bg-white rounded-3xl shadow-card p-8">
-            {/* Success state */}
-            {success && (
+            {/* Step 2: WhatsApp Phone Verification */}
+            {showVerificationStep ? (
               <motion.div
-                className="flex flex-col items-center justify-center py-8 text-center"
-                initial={{ opacity: 0, scale: 0.8 }}
+                className="flex flex-col items-center justify-center text-center space-y-5"
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
               >
-                <CheckCircle2 className="text-green-500 mb-3" size={56} />
-                <h2 className="text-xl font-bold text-ninja-dark">تم إنشاء الحساب بنجاح!</h2>
-                <p className="text-gray-500 mt-2">جاري تحويلك لصفحة الدخول...</p>
-              </motion.div>
-            )}
+                {isVerifiedSuccess ? (
+                  <>
+                    <CheckCircle2 className="text-green-500 mb-1" size={56} />
+                    <h2 className="text-2xl font-black text-ninja-dark">تم تأكيد رقم هاتفك بنجاح! 🎉</h2>
+                    <p className="text-gray-500">جاري تحويلك لصفحة تسجيل الدخول...</p>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center text-3xl shadow-sm">
+                      💬
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-black text-ninja-dark">تأكيد رقم الهاتف مجاناً عبر واتساب</h2>
+                      <p className="text-gray-500 text-sm mt-1">
+                        أرسل رسالة التوثيق التلقائية لرقم المطعم عبر واتساب للحصول على الكود وتأكيد حسابك
+                      </p>
+                    </div>
 
-            {!success && (
+                    {whatsappUrl && (
+                      <a
+                        href={whatsappUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold py-3.5 px-6 rounded-2xl shadow-md transition-all text-base"
+                      >
+                        <MessageCircle size={22} />
+                        فتح واتساب لإرسال كود التأكيد 💬
+                      </a>
+                    )}
+
+                    <div className="w-full border-t border-gray-100 pt-4 space-y-3">
+                      <label className="block text-xs font-bold text-gray-500 text-right">
+                        أدخل كود التأكيد (4 أرقام):
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          maxLength={4}
+                          value={otpCode}
+                          onChange={(e) => setOtpCode(e.target.value)}
+                          placeholder="1234"
+                          dir="ltr"
+                          className="w-28 text-center font-black tracking-widest text-2xl bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-emerald-500 focus:bg-white"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleVerifyOtp}
+                          disabled={isVerifying}
+                          className="flex-1 bg-ninja-dark hover:bg-black text-white font-bold rounded-xl px-4 py-2.5 text-base transition-colors"
+                        >
+                          {isVerifying ? 'جاري التحقق...' : 'تأكيد الرمز ✓'}
+                        </button>
+                      </div>
+
+                      {verifyError && (
+                        <p className="text-red-500 text-xs font-semibold text-right">{verifyError}</p>
+                      )}
+                    </div>
+
+                    <div className="w-full pt-2 flex items-center justify-between text-xs text-gray-400">
+                      <span>رقم الهاتف: {registeredPhone}</span>
+                      <button
+                        type="button"
+                        onClick={() => router.push('/login')}
+                        className="text-ninja-red hover:underline font-bold"
+                      >
+                        تأكيد لاحقاً ومتابعة الدخول ←
+                      </button>
+                    </div>
+                  </>
+                )}
+              </motion.div>
+            ) : (
               <>
                 {/* Server error */}
                 {serverError && (
@@ -194,7 +312,7 @@ export default function RegisterPage() {
                       <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>
                     )}
                     <p className="text-gray-400 text-xs mt-1">
-                      يُستخدم لتسجيل الدخول وتأكيد الطلبات
+                      يُستخدم لتسجيل الدخول والتوثيق مجاناً عبر واتساب
                     </p>
                   </div>
 
@@ -289,7 +407,7 @@ export default function RegisterPage() {
                         جاري الإنشاء...
                       </span>
                     ) : (
-                      'إنشاء الحساب 🎉'
+                      'إنشاء الحساب ومتابعة التأكيد 🎉'
                     )}
                   </motion.button>
                 </form>
