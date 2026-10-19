@@ -2,6 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { registerSchema } from '@/lib/validators'
 
+function normalizePhone(input: string): string {
+  const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
+  let res = input
+  arabicDigits.forEach((d, i) => {
+    res = res.replaceAll(d, i.toString())
+  })
+  let clean = res.replace(/[\s\-\(\)\+]/g, '')
+  if (clean.startsWith('0020')) clean = '0' + clean.slice(4)
+  else if (clean.startsWith('20') && clean.length === 12) clean = '0' + clean.slice(2)
+  return clean
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -14,7 +26,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { full_name, phone, email, password } = result.data
+    const { full_name, phone: rawPhone, email, password } = result.data
+    const phone = normalizePhone(rawPhone)
     const adminClient = createAdminClient()
 
     // Check phone uniqueness first
@@ -22,7 +35,7 @@ export async function POST(request: NextRequest) {
       .from('profiles')
       .select('id')
       .eq('phone', phone)
-      .single()
+      .maybeSingle()
 
     if (existingProfile) {
       return NextResponse.json(

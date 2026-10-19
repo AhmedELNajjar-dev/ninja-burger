@@ -58,18 +58,18 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className={cn(
-              'relative w-full bg-white rounded-2xl shadow-xl overflow-hidden',
+              'relative w-full bg-white rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col',
               sizes[size]
             )}
             role="dialog"
             aria-modal="true"
           >
             {title && (
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                <h3 className="text-xl font-bold text-gray-900">{title}</h3>
+              <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-gray-100 shrink-0">
+                <h3 className="text-lg sm:text-xl font-black text-gray-900">{title}</h3>
                 <button
                   onClick={onClose}
-                  className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
+                  className="p-1.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -78,12 +78,12 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             {!title && (
               <button
                 onClick={onClose}
-                className="absolute top-4 left-4 p-2 z-10 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
+                className="absolute top-3 left-3 p-1.5 z-10 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             )}
-            <div className="p-6 max-h-[85vh] overflow-y-auto">
+            <div className="p-4 sm:p-6 overflow-y-auto scrollbar-ninja flex-1">
               {children}
             </div>
           </motion.div>

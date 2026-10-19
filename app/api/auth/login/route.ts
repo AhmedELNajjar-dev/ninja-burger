@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { loginSchema } from '@/lib/validators'
+
+function normalizePhone(input: string): string {
+  const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
+  let res = input
+  arabicDigits.forEach((d, i) => {
+    res = res.replaceAll(d, i.toString())
+  })
+  let clean = res.replace(/[\s\-\(\)\+]/g, '')
+  if (clean.startsWith('0020')) clean = '0' + clean.slice(4)
+  else if (clean.startsWith('20') && clean.length === 12) clean = '0' + clean.slice(2)
+  return clean
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,20 +28,23 @@ export async function POST(request: NextRequest) {
 
     const { identifier, password } = result.data
     const supabase = createClient()
+    const adminClient = createAdminClient()
 
     let email = identifier.trim()
 
-    // Check if identifier looks like a phone number
-    const phoneRegex = /^(\+?2)?0(10|11|12|15)[0-9]{8}$/
-    const isPhone = phoneRegex.test(email.replace(/\s/g, ''))
+    // Normalize phone number (handling Arabic digits, spaces, +20, etc.)
+    const cleanedPhone = normalizePhone(email)
+    const egyptianPhoneRegex = /^0(10|11|12|15)[0-9]{8}$/
+    const isPhone = egyptianPhoneRegex.test(cleanedPhone)
 
     if (isPhone) {
-      // Look up the email associated with this phone
-      const { data: profile, error: profileError } = await supabase
+      // Must use adminClient to bypass RLS since the user is not authenticated yet
+      const { data: profile, error: profileError } = await adminClient
         .from('profiles')
-        .select('id')
-        .eq('phone', email.replace(/\s/g, ''))
-        .single()
+        .select('id, phone')
+        .or(`phone.eq.${cleanedPhone},phone.eq.+2${cleanedPhone},phone.eq.2${cleanedPhone},phone.eq.002${cleanedPhone}`)
+        .limit(1)
+        .maybeSingle()
 
       if (profileError || !profile) {
         return NextResponse.json(
@@ -38,14 +53,12 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Get email from auth.users via service-role (profiles doesn't store email)
-      const { createAdminClient } = await import('@/lib/supabase/server')
-      const adminClient = createAdminClient()
+      // Look up auth user to get their registered email
       const { data: authUser, error: authError } = await adminClient.auth.admin.getUserById(profile.id)
 
       if (authError || !authUser.user?.email) {
         return NextResponse.json(
-          { error: 'حدث خطأ في المصادقة' },
+          { error: 'حدث خطأ أثناء المصادقة' },
           { status: 500 }
         )
       }
@@ -53,7 +66,7 @@ export async function POST(request: NextRequest) {
       email = authUser.user.email
     }
 
-    // Sign in with email + password
+    // Sign in with Supabase Auth
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -61,13 +74,13 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       return NextResponse.json(
-        { error: 'البريد الإلكتروني أو كلمة المرور غير صحيحة' },
+        { error: 'البريد الإلكتروني / رقم الهاتف أو كلمة المرور غير صحيحة' },
         { status: 401 }
       )
     }
 
     return NextResponse.json({ data: { user: data.user } })
-  } catch {
+  } catch (e) {
     return NextResponse.json({ error: 'حدث خطأ في الخادم' }, { status: 500 })
   }
 }

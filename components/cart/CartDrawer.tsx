@@ -81,13 +81,13 @@ export function CartDrawer() {
             </div>
 
             {items.length > 0 && (
-              <div className="p-6 bg-white border-t border-gray-100 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)]">
-                <div className="flex items-center justify-between mb-6">
-                  <span className="font-bold text-gray-600">الإجمالي</span>
-                  <span className="text-2xl font-black text-gray-900">{total} ج</span>
+              <div className="p-4 sm:p-6 pb-8 sm:pb-6 bg-white border-t border-gray-100 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)]">
+                <div className="flex items-center justify-between mb-4 sm:mb-6">
+                  <span className="font-bold text-gray-600 text-sm sm:text-base">الإجمالي</span>
+                  <span className="text-2xl font-black text-ninja-red">{total} ج</span>
                 </div>
-                <Button className="w-full text-lg h-14" onClick={openCheckout}>
-                  متابعة الطلب
+                <Button className="w-full text-base sm:text-lg h-12 sm:h-14 font-black shadow-ninja" onClick={openCheckout}>
+                  متابعة الطلب 🚀
                 </Button>
               </div>
             )}

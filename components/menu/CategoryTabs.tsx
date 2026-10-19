@@ -13,28 +13,22 @@ interface CategoryTabsProps {
 
 export function CategoryTabs({ categories, activeId, onSelect }: CategoryTabsProps) {
   return (
-    <div className="w-full overflow-x-auto scrollbar-hide py-4 -mx-4 px-4 sm:mx-0 sm:px-0">
-      <div className="flex items-center gap-3 w-max">
+    <div className="w-full overflow-x-auto scrollbar-hide py-2 pb-3">
+      <div className="flex items-center gap-2 sm:gap-3 w-max px-1">
         {categories.map((category) => {
           const isActive = category.id === activeId;
           return (
             <button
               key={category.id}
+              type="button"
               onClick={() => onSelect(category.id)}
               className={cn(
-                'relative px-6 py-2.5 rounded-full font-bold text-sm transition-colors whitespace-nowrap overflow-hidden border-2',
+                'relative px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm transition-all whitespace-nowrap overflow-hidden border-2 shadow-sm',
                 isActive
-                  ? 'border-transparent text-white'
-                  : 'border-gray-200 text-gray-600 hover:border-ninja-red hover:text-ninja-red'
+                  ? 'border-ninja-red text-white bg-ninja-red shadow-ninja'
+                  : 'border-gray-200 bg-white text-gray-700 hover:border-ninja-red hover:text-ninja-red'
               )}
             >
-              {isActive && (
-                <motion.div
-                  layoutId="activeCategoryTab"
-                  className="absolute inset-0 bg-ninja-red rounded-full -z-10"
-                  transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                />
-              )}
               {category.name_ar}
             </button>
           );
@@ -43,3 +37,5 @@ export function CategoryTabs({ categories, activeId, onSelect }: CategoryTabsPro
     </div>
   );
 }
+
+export default CategoryTabs;

@@ -221,7 +221,7 @@ export default function AdminDashboardClient({ initialOrders, adminProfile }: Pr
         </div>
 
         {/* Stats grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
           {[
             { label: 'قيد الانتظار', value: stats.pending, color: 'bg-red-50 border-red-200 text-red-700', dot: 'bg-red-500' },
             { label: 'مؤكدة', value: stats.confirmed, color: 'bg-yellow-50 border-yellow-200 text-yellow-700', dot: 'bg-yellow-500' },
@@ -230,20 +230,20 @@ export default function AdminDashboardClient({ initialOrders, adminProfile }: Pr
             {
               label: 'إجمالي الإيرادات',
               value: `${stats.revenue.toLocaleString()} ج`,
-              color: 'bg-ninja-red/5 border-ninja-red/20 text-ninja-red',
+              color: 'bg-ninja-red/5 border-ninja-red/20 text-ninja-red col-span-2 sm:col-span-1',
               dot: 'bg-ninja-red',
             },
           ].map((stat) => (
             <motion.div
               key={stat.label}
-              className={`bg-white border rounded-2xl p-4 shadow-card ${stat.color}`}
+              className={`bg-white border rounded-2xl p-3 sm:p-4 shadow-card ${stat.color}`}
               whileHover={{ scale: 1.02 }}
             >
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-1.5 mb-1">
                 <div className={`w-2 h-2 rounded-full ${stat.dot}`} />
-                <span className="text-xs font-semibold opacity-80">{stat.label}</span>
+                <span className="text-[11px] sm:text-xs font-semibold opacity-85">{stat.label}</span>
               </div>
-              <div className="text-2xl font-black">{stat.value}</div>
+              <div className="text-xl sm:text-2xl font-black">{stat.value}</div>
             </motion.div>
           ))}
         </div>
