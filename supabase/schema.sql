@@ -7,6 +7,7 @@ CREATE TABLE public.profiles (
   full_name text NOT NULL,
   phone text UNIQUE NOT NULL,
   role text NOT NULL DEFAULT 'customer' CHECK (role IN ('customer', 'admin')),
+  cart jsonb NOT NULL DEFAULT '[]'::jsonb,
   created_at timestamptz DEFAULT now()
 );
 

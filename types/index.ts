@@ -5,6 +5,7 @@ export interface Profile {
   full_name: string
   phone: string
   role: 'customer' | 'admin'
+  cart?: CartItem[]
   created_at: string
 }
 
@@ -22,12 +23,13 @@ export interface MenuItem {
   name_en: string
   description_ar: string | null
   price_single: number
-  price_double: number | null
-  price_triple: number | null
-  image_url: string | null
+  price_double?: number | null
+  price_triple?: number | null
+  image_url?: string | null
   is_available: boolean
   sort_order: number
   category?: Category
+  created_at?: string
 }
 
 // Addon / modifier available for any menu item
@@ -36,6 +38,7 @@ export interface Addon {
   name_ar: string
   name_en: string
   price: number
+  sort_order?: number
   category?: string // optional grouping
 }
 

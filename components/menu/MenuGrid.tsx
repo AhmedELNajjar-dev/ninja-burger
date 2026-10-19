@@ -8,9 +8,10 @@ import { MenuCard } from './MenuCard';
 interface MenuGridProps {
   items: MenuItem[];
   addons: Addon[];
+  isLoggedIn?: boolean;
 }
 
-export function MenuGrid({ items, addons }: MenuGridProps) {
+export function MenuGrid({ items, addons, isLoggedIn }: MenuGridProps) {
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
@@ -45,7 +46,7 @@ export function MenuGrid({ items, addons }: MenuGridProps) {
     >
       {items.map((menuItem) => (
         <motion.div key={menuItem.id} variants={item}>
-          <MenuCard item={menuItem} addons={addons} />
+          <MenuCard item={menuItem} addons={addons} isLoggedIn={isLoggedIn} />
         </motion.div>
       ))}
     </motion.div>

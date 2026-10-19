@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Check } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Check, Lock } from 'lucide-react';
 import { MenuItem, Addon, ItemSize, SIZE_LABELS } from '@/types';
 import { useCartStore } from '@/store/cartStore';
 import { cn } from '../ui/cn';
@@ -11,13 +12,16 @@ import { Button } from '../ui/Button';
 interface MenuCardProps {
   item: MenuItem;
   addons: Addon[];
+  isLoggedIn?: boolean;
 }
 
-export function MenuCard({ item, addons }: MenuCardProps) {
+export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
+  const router = useRouter();
   const addItem = useCartStore((state) => state.addItem);
   const [selectedSize, setSelectedSize] = useState<ItemSize>('single');
   const [selectedAddons, setSelectedAddons] = useState<Set<string>>(new Set());
   const [isAdded, setIsAdded] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const sizes: { size: ItemSize; price: number | null }[] = [
     { size: 'single' as ItemSize, price: item.price_single },
@@ -39,6 +43,11 @@ export function MenuCard({ item, addons }: MenuCardProps) {
   const totalPrice = currentPrice + addonsTotal;
 
   const handleAdd = () => {
+    if (!isLoggedIn) {
+      setShowAuthModal(true);
+      return;
+    }
+
     const chosenAddons = addons
       .filter(a => selectedAddons.has(a.id))
       .map(a => ({ id: a.id, name_ar: a.name_ar, price: a.price }));
@@ -139,6 +148,51 @@ export function MenuCard({ item, addons }: MenuCardProps) {
           </motion.div>
         </div>
       </div>
+
+      {/* Login Required Modal */}
+      <AnimatePresence>
+        {showAuthModal && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" dir="rtl">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl text-center space-y-4"
+            >
+              <div className="w-16 h-16 bg-red-100 text-ninja-red rounded-full flex items-center justify-center mx-auto text-3xl">
+                🔒
+              </div>
+              <h3 className="text-xl font-black text-ninja-dark">تسجيل الدخول مطلوب</h3>
+              <p className="text-sm text-gray-500 leading-relaxed">
+                لتتمكن من إضافة <span className="font-bold text-ninja-dark">{item.name_ar}</span> إلى سلتك وحفظ طلباتك في حسابك، يُرجى تسجيل الدخول أولاً.
+              </p>
+              <div className="space-y-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => router.push('/login?redirect=/')}
+                  className="btn-primary w-full py-3 text-base"
+                >
+                  تسجيل الدخول 🚀
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.push('/register')}
+                  className="w-full py-2.5 text-sm font-bold text-ninja-red hover:underline"
+                >
+                  ليس لديك حساب؟ إنشاء حساب جديد
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowAuthModal(false)}
+                  className="w-full py-2 text-xs text-gray-400 hover:text-gray-600"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

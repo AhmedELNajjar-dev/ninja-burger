@@ -3,6 +3,7 @@ import { Navbar } from '@/components/Navbar'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { CheckoutModal } from '@/components/cart/CheckoutModal'
 import HomeHero from '@/components/HomeHero'
+import { DEFAULT_CATEGORIES, DEFAULT_MENU_ITEMS, DEFAULT_ADDONS } from '@/lib/constants/menuData'
 import type { Category, MenuItem, Addon, Profile } from '@/types'
 
 export const revalidate = 60 // ISR: revalidate menu every 60 seconds
@@ -48,20 +49,15 @@ export default async function HomePage({
     profile = data
   }
 
-  const safeCategories: Category[] = categories ?? []
-  const safeItems: MenuItem[] = menuItems ?? []
-  const safeAddons: Addon[] = addons ?? []
+  const safeCategories: Category[] = (categories && categories.length > 0) ? categories : DEFAULT_CATEGORIES
+  const safeItems: MenuItem[] = (menuItems && menuItems.length > 0) ? menuItems : DEFAULT_MENU_ITEMS
+  const safeAddons: Addon[] = (addons && addons.length > 0) ? addons : DEFAULT_ADDONS
 
   // Determine active category
   const activeCategoryId =
     searchParams.category ??
     safeCategories[0]?.id ??
     ''
-
-  // Filter items by active category
-  const filteredItems = activeCategoryId
-    ? safeItems.filter((item) => item.category_id === activeCategoryId)
-    : safeItems
 
   return (
     <div className="min-h-screen bg-ninja-gray">
@@ -88,6 +84,7 @@ export default async function HomePage({
           activeCategoryId={activeCategoryId}
           allItems={safeItems}
           addons={safeAddons}
+          isLoggedIn={!!user}
         />
       </section>
 
@@ -112,11 +109,13 @@ function CategoryTabsWrapper({
   activeCategoryId,
   allItems,
   addons,
+  isLoggedIn,
 }: {
   categories: Category[]
   activeCategoryId: string
   allItems: MenuItem[]
   addons: Addon[]
+  isLoggedIn: boolean
 }) {
   return (
     <HomeClient
@@ -124,6 +123,7 @@ function CategoryTabsWrapper({
       initialCategoryId={activeCategoryId}
       allItems={allItems}
       addons={addons}
+      isLoggedIn={isLoggedIn}
     />
   )
 }

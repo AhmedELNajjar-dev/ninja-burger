@@ -9,6 +9,7 @@ import { z } from 'zod'
 import { motion } from 'framer-motion'
 import { Eye, EyeOff, Phone, Mail, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { useCartStore } from '@/store/cartStore'
 
 const loginSchema = z.object({
   identifier: z.string().min(3, 'أدخل البريد الإلكتروني أو رقم الهاتف'),
@@ -58,6 +59,8 @@ function LoginFormContent() {
 
       // Re-fetch session on client after server sets cookies
       await supabase.auth.refreshSession()
+      // Restore user's saved cart from database
+      await useCartStore.getState().loadSavedCart()
       router.push(redirect)
       router.refresh()
     } catch {

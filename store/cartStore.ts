@@ -28,10 +28,25 @@ interface CartState {
   openCheckout: () => void
   closeCheckout: () => void
 
+  loadSavedCart: () => Promise<void>
+
   // Computed helpers (use as selectors)
   totalItems: () => number
   totalAmount: () => number
   getTotal: () => number
+}
+
+let syncTimeout: any = null
+function syncCartToDb(items: CartItem[]) {
+  if (typeof window === 'undefined') return
+  clearTimeout(syncTimeout)
+  syncTimeout = setTimeout(() => {
+    fetch('/api/cart', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items }),
+    }).catch(() => {})
+  }, 400)
 }
 
 function computeLineTotal(unitPrice: number, addons: SelectedAddon[], quantity: number) {
@@ -47,6 +62,18 @@ export const useCartStore = create<CartState>()(
       isCartOpen: false,
       isCheckoutOpen: false,
 
+      loadSavedCart: async () => {
+        try {
+          const res = await fetch('/api/cart')
+          if (res.ok) {
+            const data = await res.json()
+            if (Array.isArray(data.items) && data.items.length > 0) {
+              set({ items: data.items })
+            }
+          }
+        } catch {}
+      },
+
       addItem: ({ menuItemId, name_ar, name_en, size, unitPrice, addons }) => {
         set((state) => {
           // Check if same item + same size + same addons exists
@@ -59,17 +86,17 @@ export const useCartStore = create<CartState>()(
           )
 
           if (existing) {
-            return {
-              items: state.items.map((i) =>
-                i.cartId === existing.cartId
-                  ? {
-                      ...i,
-                      quantity: i.quantity + 1,
-                      lineTotal: computeLineTotal(i.unitPrice, i.addons, i.quantity + 1),
-                    }
-                  : i
-              ),
-            }
+            const updatedItems = state.items.map((i) =>
+              i.cartId === existing.cartId
+                ? {
+                    ...i,
+                    quantity: i.quantity + 1,
+                    lineTotal: computeLineTotal(i.unitPrice, i.addons, i.quantity + 1),
+                  }
+                : i
+            )
+            syncCartToDb(updatedItems)
+            return { items: updatedItems }
           }
 
           const newItem: CartItem = {
@@ -84,22 +111,27 @@ export const useCartStore = create<CartState>()(
             addonTotal: addons.reduce((s, a) => s + a.price, 0),
             lineTotal: computeLineTotal(unitPrice, addons, 1),
           }
-          return { items: [...state.items, newItem] }
+          const newItems = [...state.items, newItem]
+          syncCartToDb(newItems)
+          return { items: newItems }
         })
       },
 
-      removeItem: (cartId) =>
-        set((state) => ({
-          items: state.items.filter((i) => i.cartId !== cartId),
-        })),
+      removeItem: (cartId) => {
+        set((state) => {
+          const newItems = state.items.filter((i) => i.cartId !== cartId)
+          syncCartToDb(newItems)
+          return { items: newItems }
+        })
+      },
 
       updateQuantity: (cartId, quantity) => {
         if (quantity < 1) {
           get().removeItem(cartId)
           return
         }
-        set((state) => ({
-          items: state.items.map((i) =>
+        set((state) => {
+          const newItems = state.items.map((i) =>
             i.cartId === cartId
               ? {
                   ...i,
@@ -107,11 +139,16 @@ export const useCartStore = create<CartState>()(
                   lineTotal: computeLineTotal(i.unitPrice, i.addons, quantity),
                 }
               : i
-          ),
-        }))
+          )
+          syncCartToDb(newItems)
+          return { items: newItems }
+        })
       },
 
-      clearCart: () => set({ items: [] }),
+      clearCart: () => {
+        set({ items: [] })
+        syncCartToDb([])
+      },
 
       openCart: () => set({ isOpen: true, isCartOpen: true }),
       closeCart: () => set({ isOpen: false, isCartOpen: false }),
