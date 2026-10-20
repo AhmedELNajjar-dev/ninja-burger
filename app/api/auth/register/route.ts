@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { registerSchema } from '@/lib/validators'
+import { rateLimit, getClientIp, rateLimitExceededResponse } from '@/lib/rateLimit'
 
 function normalizePhone(input: string): string {
   const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
@@ -16,6 +17,18 @@ function normalizePhone(input: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    const clientIp = getClientIp(request)
+    // Rate limit: max 5 account registrations per hour (3600s) per IP
+    const rl = await rateLimit({
+      limit: 5,
+      windowSeconds: 3600,
+      identifier: `register:${clientIp}`,
+    })
+
+    if (!rl.success) {
+      return rateLimitExceededResponse('تم تجاوز الحد المسموح لإنشاء الحسابات من هذا الجهاز. يرجى المحاولة بعد ساعة.')
+    }
+
     const body = await request.json()
     const result = registerSchema.safeParse(body)
 

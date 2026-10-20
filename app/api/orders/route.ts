@@ -2,9 +2,22 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { sendOrderNotification } from '@/lib/discord'
 import { checkoutSchema } from '@/lib/validators'
+import { rateLimit, getClientIp, rateLimitExceededResponse } from '@/lib/rateLimit'
 
 export async function POST(request: NextRequest) {
   try {
+    const clientIp = getClientIp(request)
+    // Rate limit: max 10 orders per 30 minutes (1800s) per IP
+    const rl = await rateLimit({
+      limit: 10,
+      windowSeconds: 1800,
+      identifier: `order_create:${clientIp}`,
+    })
+
+    if (!rl.success) {
+      return rateLimitExceededResponse('لقد قمت بإرسال عدد كبير من الطلبات في وقت قصير. يرجى الانتظار قليلاً.')
+    }
+
     const body = await request.json()
     const result = checkoutSchema.safeParse(body)
 

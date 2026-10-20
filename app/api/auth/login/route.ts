@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { loginSchema } from '@/lib/validators'
+import { rateLimit, getClientIp, rateLimitExceededResponse } from '@/lib/rateLimit'
 
 function normalizePhone(input: string): string {
   const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
@@ -16,6 +17,18 @@ function normalizePhone(input: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    const clientIp = getClientIp(request)
+    // Rate limit: max 10 login attempts per 15 minutes (900s) per IP
+    const rl = await rateLimit({
+      limit: 10,
+      windowSeconds: 900,
+      identifier: `login:${clientIp}`,
+    })
+
+    if (!rl.success) {
+      return rateLimitExceededResponse('تم تجاوز الحد المسموح لمحاولات تسجيل الدخول. يرجى الانتظار 15 دقيقة والمحاولة مرة أخرى.')
+    }
+
     const body = await request.json()
     const result = loginSchema.safeParse(body)
 

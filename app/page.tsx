@@ -3,7 +3,7 @@ import { Navbar } from '@/components/Navbar'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { CheckoutModal } from '@/components/cart/CheckoutModal'
 import HomeHero from '@/components/HomeHero'
-import { DEFAULT_CATEGORIES, DEFAULT_MENU_ITEMS, DEFAULT_ADDONS } from '@/lib/constants/menuData'
+import { getCachedMenuData } from '@/lib/menuCache'
 import type { Category, MenuItem, Addon, Profile } from '@/types'
 
 export const revalidate = 60 // ISR: revalidate menu every 60 seconds
@@ -15,26 +15,12 @@ export default async function HomePage({
 }) {
   const supabase = createClient()
 
-  // Fetch categories, menu items, and addons in parallel
+  // Fetch cached menu data and user session concurrently
   const [
-    { data: categories },
-    { data: menuItems },
-    { data: addons },
+    { categories: safeCategories, menuItems: safeItems, addons: safeAddons },
     { data: { user } },
   ] = await Promise.all([
-    supabase
-      .from('categories')
-      .select('*')
-      .order('sort_order', { ascending: true }),
-    supabase
-      .from('menu_items')
-      .select('*, category:categories(id, name_ar, name_en, sort_order)')
-      .eq('is_available', true)
-      .order('sort_order', { ascending: true }),
-    supabase
-      .from('addons')
-      .select('*')
-      .order('sort_order', { ascending: true }),
+    getCachedMenuData(),
     supabase.auth.getUser(),
   ])
 
@@ -48,10 +34,6 @@ export default async function HomePage({
       .single()
     profile = data
   }
-
-  const safeCategories: Category[] = (categories && categories.length > 0) ? categories : DEFAULT_CATEGORIES
-  const safeItems: MenuItem[] = (menuItems && menuItems.length > 0) ? menuItems : DEFAULT_MENU_ITEMS
-  const safeAddons: Addon[] = (addons && addons.length > 0) ? addons : DEFAULT_ADDONS
 
   // Determine active category
   const activeCategoryId =

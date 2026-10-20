@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { rateLimit, getClientIp, rateLimitExceededResponse } from '@/lib/rateLimit'
 
 const RESTAURANT_WHATSAPP = '201008427736'
 
@@ -17,6 +18,18 @@ function normalizePhone(input: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    const clientIp = getClientIp(request)
+    // Rate limit: max 3 WhatsApp OTP generation requests per 10 minutes (600s) per IP
+    const rl = await rateLimit({
+      limit: 3,
+      windowSeconds: 600,
+      identifier: `otp_send:${clientIp}`,
+    })
+
+    if (!rl.success) {
+      return rateLimitExceededResponse('تم طلب كود التأكيد عدة مرات. يرجى الانتظار 10 دقائق قبل إعادة المحاولة.')
+    }
+
     const supabase = createClient()
     const adminClient = createAdminClient()
 
