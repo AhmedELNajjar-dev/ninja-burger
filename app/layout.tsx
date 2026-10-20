@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Cairo } from 'next/font/google'
 import './globals.css'
+import { Analytics } from '@vercel/analytics/next'
 
 const cairo = Cairo({
   subsets: ['arabic', 'latin'],
@@ -53,6 +54,7 @@ export default function RootLayout({
           انتقل إلى المحتوى الرئيسي
         </a>
         <main id="main-content">{children}</main>
+        <Analytics />
       </body>
     </html>
   )
