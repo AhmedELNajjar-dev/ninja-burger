@@ -26,9 +26,14 @@ export async function middleware(request: NextRequest) {
   )
 
   // Refresh session — required for @supabase/ssr
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // Catch stale/expired refresh tokens gracefully so they don't log red noise in terminal
+  let user = null
+  try {
+    const { data } = await supabase.auth.getUser()
+    user = data.user
+  } catch {
+    user = null
+  }
 
   const { pathname } = request.nextUrl
 
