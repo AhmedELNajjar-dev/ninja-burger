@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import AdminDashboardClient from './AdminDashboardClient'
 import type { Order, Profile } from '@/types'
 
@@ -7,6 +7,7 @@ export const metadata = { title: 'لوحة التحكم — نينجا برجر'
 
 export default async function AdminPage() {
   const supabase = createClient()
+  const adminClient = createAdminClient()
 
   // Verify authentication
   const {
@@ -15,8 +16,8 @@ export default async function AdminPage() {
 
   if (!user) redirect('/login?redirect=/admin')
 
-  // Verify admin role
-  const { data: profile } = await supabase
+  // Verify admin role using adminClient (bypasses RLS on server)
+  const { data: profile } = await adminClient
     .from('profiles')
     .select('*')
     .eq('id', user.id)
@@ -25,7 +26,7 @@ export default async function AdminPage() {
   if (!profile || profile.role !== 'admin') redirect('/')
 
   // Fetch initial orders (last 50, sorted newest first)
-  const { data: orders } = await supabase
+  const { data: orders } = await adminClient
     .from('orders')
     .select('*')
     .order('created_at', { ascending: false })

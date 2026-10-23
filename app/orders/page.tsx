@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import Navbar from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import OrdersClient from './OrdersClient'
@@ -17,7 +17,7 @@ export default async function OrdersPage() {
   if (!user) redirect('/login?redirect=/orders')
 
   const [{ data: profile }, { data: orders }] = await Promise.all([
-    supabase.from('profiles').select('*').eq('id', user.id).single(),
+    createAdminClient().from('profiles').select('*').eq('id', user.id).single(),
     supabase
       .from('orders')
       .select('*')

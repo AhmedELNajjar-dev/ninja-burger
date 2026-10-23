@@ -176,7 +176,7 @@ GRANT INSERT, UPDATE, DELETE ON public.categories, public.menu_items, public.add
 GRANT SELECT ON public.orders TO authenticated;
 GRANT UPDATE (status) ON public.orders TO authenticated;
 
--- Profiles: Column-level permissions prevent privilege escalation (cannot update 'role' or view 'phone_verification_code')
-GRANT SELECT (id, full_name, phone, email, role, cart, is_phone_verified, saved_address, created_at)
-  ON public.profiles TO authenticated;
+-- Profiles: Authenticated users can read their own profile (strictly governed by RLS: auth.uid() = id)
+-- UPDATE is strictly restricted to full_name only (preventing privilege escalation to 'role' = 'admin')
+GRANT SELECT ON public.profiles TO authenticated;
 GRANT UPDATE (full_name) ON public.profiles TO authenticated;

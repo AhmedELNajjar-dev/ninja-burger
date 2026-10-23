@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { Navbar } from '@/components/Navbar'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { CheckoutModal } from '@/components/cart/CheckoutModal'
@@ -33,7 +33,17 @@ export default async function HomePage({
       .select('*')
       .eq('id', user.id)
       .single()
-    profile = data
+    if (data) {
+      profile = data
+    } else {
+      const adminClient = createAdminClient()
+      const { data: fallbackProfile } = await adminClient
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+      profile = fallbackProfile
+    }
   }
 
   // Determine active category
