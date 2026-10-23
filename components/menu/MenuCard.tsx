@@ -8,6 +8,7 @@ import { MenuItem, Addon, ItemSize, SIZE_LABELS } from '@/types';
 import { useCartStore } from '@/store/cartStore';
 import { cn } from '../ui/cn';
 import { Button } from '../ui/Button';
+import { useTranslation } from '@/lib/useTranslation';
 
 interface MenuCardProps {
   item: MenuItem;
@@ -17,6 +18,7 @@ interface MenuCardProps {
 
 export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
   const router = useRouter();
+  const { t, isArabic } = useTranslation();
   const addItem = useCartStore((state) => state.addItem);
   const [selectedSize, setSelectedSize] = useState<ItemSize>('single');
   const [selectedAddons, setSelectedAddons] = useState<Set<string>>(new Set());
@@ -93,7 +95,7 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
 
         {/* Brand red accent stripe */}
         <div className="absolute top-3 end-3 bg-ninja-red text-white text-[11px] font-black px-2.5 py-1 rounded-full shadow-sm">
-          طازج يومياً
+          {t.freshDaily}
         </div>
       </div>
 
@@ -102,10 +104,10 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
         <div>
           <div className="flex items-start justify-between gap-2">
             <h3 className="text-lg sm:text-xl font-black text-ninja-dark leading-tight">
-              {item.name_ar}
+              {isArabic ? item.name_ar : (item.name_en || item.name_ar)}
             </h3>
             <span className="text-xs text-gray-400 font-semibold shrink-0">
-              {item.name_en}
+              {isArabic ? item.name_en : item.name_ar}
             </span>
           </div>
 
@@ -137,9 +139,9 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
                         : 'text-gray-600 hover:text-ninja-dark'
                     )}
                   >
-                    <span>{SIZE_LABELS[size]}</span>
+                    <span>{isArabic ? SIZE_LABELS[size] : (size === 'single' ? 'Single' : size === 'double' ? 'Double' : 'Triple')}</span>
                     <span className={cn('text-[10px] opacity-80', isSelected ? 'text-white' : 'text-gray-500')}>
-                      {price} ج
+                      {price} {t.currency}
                     </span>
                   </button>
                 );
@@ -201,9 +203,9 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
                         >
                           {isChecked && <Check size={12} strokeWidth={3} />}
                         </div>
-                        <span>{addon.name_ar}</span>
+                        <span>{isArabic ? addon.name_ar : (addon.name_en || addon.name_ar)}</span>
                       </div>
-                      <span className="text-gray-500 font-bold">+{addon.price} ج</span>
+                      <span className="text-gray-500 font-bold">+{addon.price} {t.currency}</span>
                     </label>
                   );
                 })}
@@ -219,7 +221,7 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
               السعر
             </span>
             <span className="text-2xl font-black text-ninja-dark leading-none">
-              {totalPrice} <span className="text-sm font-bold text-ninja-red">ج</span>
+              {totalPrice} <span className="text-sm font-bold text-ninja-red">{t.currency}</span>
             </span>
           </div>
 
@@ -235,15 +237,15 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
               {isAdded ? (
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="flex items-center gap-1.5">
                   <Check size={16} strokeWidth={3} />
-                  <span>تمت الإضافة</span>
+                  <span>{t.addedToCart}</span>
                 </motion.div>
               ) : item.is_available ? (
                 <span className="flex items-center gap-1.5">
                   <Plus size={16} strokeWidth={3} />
-                  <span>أضف للسلة</span>
+                  <span>{t.addToCart}</span>
                 </span>
               ) : (
-                'غير متوفر'
+                isArabic ? 'غير متوفر' : 'Out of stock'
               )}
             </Button>
           </motion.div>

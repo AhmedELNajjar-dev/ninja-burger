@@ -4,6 +4,7 @@ import { CartDrawer } from '@/components/cart/CartDrawer'
 import { CheckoutModal } from '@/components/cart/CheckoutModal'
 import { Footer } from '@/components/Footer'
 import HomeHero from '@/components/HomeHero'
+import { MenuSectionHeader } from '@/components/menu/MenuSectionHeader'
 import { getCachedMenuData } from '@/lib/menuCache'
 import type { Category, MenuItem, Addon, Profile } from '@/types'
 
@@ -64,12 +65,7 @@ export default async function HomePage({
         id="menu"
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
       >
-        <div className="flex items-center gap-3 mb-6">
-          <h2 className="text-3xl font-extrabold text-ninja-dark">
-            🍔 قائمة الطعام
-          </h2>
-          <div className="flex-1 h-0.5 bg-gradient-to-l from-transparent via-ninja-red/30 to-transparent" />
-        </div>
+        <MenuSectionHeader />
 
         {/* Category Tabs — client component for interactivity */}
         <CategoryTabsWrapper

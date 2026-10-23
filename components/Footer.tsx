@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useTranslation } from '@/lib/useTranslation';
 import {
   MapPin,
   Phone,
@@ -15,8 +16,9 @@ import {
 } from 'lucide-react';
 
 export function Footer() {
+  const { t, isArabic } = useTranslation();
   return (
-    <footer className="bg-ninja-dark text-white border-t border-white/10 mt-16 pt-12 pb-8" dir="rtl">
+    <footer className="bg-ninja-dark text-white border-t border-white/10 mt-16 pt-12 pb-8" dir={isArabic ? "rtl" : "ltr"}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
           {/* Brand Info & Mission */}
@@ -29,7 +31,7 @@ export function Footer() {
               </div>
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed">
-              أقوى وألذ برجر مشوي على الفحم في قلب المعادي. مكونات طازجة 100%، صوصات سرية خاصة، وطعم لا يُنسى! 🍔🔥
+              {isArabic ? 'أقوى وألذ برجر مشوي على الفحم في قلب المعادي. مكونات طازجة 100%، صوصات سرية خاصة، وطعم لا يُنسى! 🍔🔥' : 'The best charcoal flame-grilled smashed burgers in the heart of Maadi. 100% fresh ingredients, secret sauces, unforgettable taste! 🍔🔥'}
             </p>
             {/* Social Links */}
             <div className="flex items-center gap-3 pt-2">
@@ -67,19 +69,19 @@ export function Footer() {
           <div className="space-y-3">
             <h4 className="text-base font-bold text-white flex items-center gap-2">
               <Clock className="w-4 h-4 text-ninja-yellow" />
-              ساعات العمل والتوصيل
+              {t.workingHours}
             </h4>
             <div className="text-sm text-gray-400 space-y-2">
               <p className="flex justify-between border-b border-white/5 pb-1.5">
-                <span>السبت – الأربعاء:</span>
+                <span>{isArabic ? 'السبت – الأربعاء:' : 'Sat – Wed:'}</span>
                 <span className="text-white font-mono" dir="ltr">12:00 PM – 02:00 AM</span>
               </p>
               <p className="flex justify-between border-b border-white/5 pb-1.5">
-                <span>الخميس – الجمعة:</span>
+                <span>{isArabic ? 'الخميس – الجمعة:' : 'Thu – Fri:'}</span>
                 <span className="text-white font-mono" dir="ltr">12:00 PM – 03:30 AM</span>
               </p>
               <p className="text-xs text-ninja-yellow font-semibold pt-1">
-                ⚡ خدمة التوصيل متوفرة طوال ساعات العمل
+                {isArabic ? '⚡ خدمة التوصيل متوفرة طوال ساعات العمل' : '⚡ Fast delivery available during all working hours'}
               </p>
             </div>
           </div>
@@ -88,12 +90,12 @@ export function Footer() {
           <div className="space-y-3">
             <h4 className="text-base font-bold text-white flex items-center gap-2">
               <MapPin className="w-4 h-4 text-ninja-yellow" />
-              العنوان والتواصل
+              {t.contactUs}
             </h4>
             <ul className="text-sm text-gray-400 space-y-2.5">
               <li className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-ninja-red shrink-0 mt-0.5" />
-                <span>156 شارع 9، ميدان دمشق، المعادي، القاهرة</span>
+                <span>{t.locationDesc}</span>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-ninja-red shrink-0" />
@@ -114,7 +116,7 @@ export function Footer() {
           <div className="space-y-3">
             <h4 className="text-base font-bold text-white flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-ninja-yellow" />
-              روابط سريعة
+              {t.quickLinks}
             </h4>
             <ul className="text-sm text-gray-400 space-y-2">
               <li>

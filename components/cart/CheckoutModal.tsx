@@ -10,6 +10,7 @@ import { Button } from '../ui/Button';
 import { useCartStore } from '@/store/cartStore';
 import { LocationPickerModal } from './LocationPickerModal';
 import { MapPin, Building, Hash, Layers, Bike, Check } from 'lucide-react';
+import { useTranslation } from '@/lib/useTranslation';
 
 // Fixed delivery fee requested by user
 const DELIVERY_FEE = 35;
@@ -42,6 +43,7 @@ interface CheckoutModalProps {
 
 export function CheckoutModal({ userPhone, userName, savedAddress }: CheckoutModalProps) {
   const { items, getTotal, isCheckoutOpen, clearCart } = useCartStore();
+  const { t, isArabic } = useTranslation();
   const setIsCheckoutOpen = (open: boolean) => useCartStore.setState({ isCheckoutOpen: open });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -139,12 +141,12 @@ export function CheckoutModal({ userPhone, userName, savedAddress }: CheckoutMod
 
   return (
     <>
-      <Modal isOpen={isCheckoutOpen} onClose={() => !isLoading && setIsCheckoutOpen(false)} title="تأكيد الطلب">
+      <Modal isOpen={isCheckoutOpen} onClose={() => !isLoading && setIsCheckoutOpen(false)} title={t.checkoutTitle}>
         {success ? (
           <div className="py-10 flex flex-col items-center justify-center text-center">
             <div className="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mb-4 text-3xl">✓</div>
-            <h3 className="text-2xl font-black text-gray-900 mb-2">تم استلام طلبك!</h3>
-            <p className="text-gray-500">جاري التجهيز... شكراً لاختيارك نينجا برجر 🥷</p>
+            <h3 className="text-2xl font-black text-gray-900 mb-2">{isArabic ? "تم استلام طلبك بنجاح!" : "Order Received Successfully!"}</h3>
+            <p className="text-gray-500">{isArabic ? "جاري التجهيز... شكراً لاختيارك نينجا برجر 🥷" : "Preparing now... Thank you for choosing Ninja Burger 🥷"}</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -153,13 +155,13 @@ export function CheckoutModal({ userPhone, userName, savedAddress }: CheckoutMod
             {hasSavedAddress && (
               <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2">
                 <Check className="w-4 h-4 text-emerald-600" />
-                <span>تم ملء عنوانك السابق المحفوظ تلقائياً للطلب السريع. يمكنك تعديله إذا أردت.</span>
+                <span>{t.savedAddressNotice}</span>
               </div>
             )}
 
-            <Input label="الاسم" {...register('customer_name')} error={errors.customer_name?.message} />
+            <Input label={t.customerName} {...register('customer_name')} error={errors.customer_name?.message} />
             <Input
-              label="رقم الهاتف"
+              label={t.customerPhone}
               type="tel"
               dir="ltr"
               className="text-right"
@@ -171,7 +173,7 @@ export function CheckoutModal({ userPhone, userName, savedAddress }: CheckoutMod
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-sm font-semibold text-gray-700">
-                  الشارع والمنطقة <span className="text-ninja-red">*</span>
+                  {t.deliveryAddress} <span className="text-ninja-red">*</span>
                 </label>
                 <button
                   type="button"
@@ -183,16 +185,16 @@ export function CheckoutModal({ userPhone, userName, savedAddress }: CheckoutMod
                   }`}
                 >
                   <MapPin className="w-3.5 h-3.5" />
-                  {selectedMapUrl ? 'تم تثبيت اللوكيشن ✓' : 'تثبيت اللوكيشن على الخريطة 📍'}
+                  {selectedMapUrl ? t.locationPinned : t.pinLocation}
                 </button>
               </div>
               <Input
-                placeholder="اكتب اسم الشارع والمنطقة يدوياً (مثال: شارع 9 تقاطع ميدان دمشق)"
+                placeholder={t.deliveryAddressPlaceholder}
                 {...register('delivery_address')}
                 error={errors.delivery_address?.message}
               />
               <p className="text-[11px] text-gray-400 mt-1">
-                اكتب العنوان بيدك لضمان الدقة في حالة التقاطعات، وثبّت الدبوس لمساعدة المندوب في الـ GPS.
+                {t.deliveryAddressHelp}
               </p>
             </div>
 
@@ -201,7 +203,7 @@ export function CheckoutModal({ userPhone, userName, savedAddress }: CheckoutMod
               <div>
                 <label className="text-xs font-bold text-gray-700 mb-1 flex items-center gap-1">
                   <Building className="w-3.5 h-3.5 text-ninja-red" />
-                  <span>رقم العمارة <span className="text-ninja-red">*</span></span>
+                  <span>{t.buildingNo} <span className="text-ninja-red">*</span></span>
                 </label>
                 <input
                   type="text"
@@ -221,7 +223,7 @@ export function CheckoutModal({ userPhone, userName, savedAddress }: CheckoutMod
               <div>
                 <label className="text-xs font-bold text-gray-700 mb-1 flex items-center gap-1">
                   <Layers className="w-3.5 h-3.5 text-ninja-red" />
-                  <span>الدور <span className="text-ninja-red">*</span></span>
+                  <span>{t.floorNo} <span className="text-ninja-red">*</span></span>
                 </label>
                 <input
                   type="text"
@@ -241,7 +243,7 @@ export function CheckoutModal({ userPhone, userName, savedAddress }: CheckoutMod
               <div>
                 <label className="text-xs font-bold text-gray-700 mb-1 flex items-center gap-1">
                   <Hash className="w-3.5 h-3.5 text-ninja-red" />
-                  <span>رقم الشقة <span className="text-ninja-red">*</span></span>
+                  <span>{t.apartmentNo} <span className="text-ninja-red">*</span></span>
                 </label>
                 <input
                   type="text"
@@ -260,9 +262,9 @@ export function CheckoutModal({ userPhone, userName, savedAddress }: CheckoutMod
             </div>
             
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-semibold text-gray-700">ملاحظات للمندوب (اختياري)</label>
+              <label className="text-sm font-semibold text-gray-700">{t.notes}</label>
               <textarea
-                placeholder="علامة مميزة، خبط الجرس، الخ..."
+                placeholder={t.notesPlaceholder}
                 {...register('notes')}
                 className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-ninja-red focus:outline-none focus:ring-1 focus:ring-ninja-red min-h-[70px] resize-none"
               />
@@ -271,19 +273,19 @@ export function CheckoutModal({ userPhone, userName, savedAddress }: CheckoutMod
             {/* Bill Breakdown with 35 EGP Delivery Fee */}
             <div className="bg-gray-50 p-4 rounded-xl mt-4 space-y-2 border border-gray-100">
               <div className="flex justify-between items-center text-sm text-gray-600">
-                <span>المجموع الفرعي:</span>
-                <span className="font-bold">{subTotal} ج</span>
+                <span>{t.subtotal}:</span>
+                <span className="font-bold">{subTotal} {t.currency}</span>
               </div>
               <div className="flex justify-between items-center text-sm text-gray-600 pb-2 border-b border-gray-200">
                 <span className="flex items-center gap-1">
                   <Bike className="w-4 h-4 text-ninja-red" />
-                  خدمة التوصيل:
+                  {t.deliveryFee}:
                 </span>
-                <span className="font-bold text-gray-800">{DELIVERY_FEE} ج</span>
+                <span className="font-bold text-gray-800">{DELIVERY_FEE} {t.currency}</span>
               </div>
               <div className="flex justify-between items-center font-black text-gray-900 pt-1">
-                <span>الإجمالي الكلي:</span>
-                <span className="text-2xl text-ninja-red">{finalTotal} ج</span>
+                <span>{t.total}:</span>
+                <span className="text-2xl text-ninja-red">{finalTotal} {t.currency}</span>
               </div>
             </div>
 
@@ -294,7 +296,7 @@ export function CheckoutModal({ userPhone, userName, savedAddress }: CheckoutMod
                 className="w-full h-16 text-xl sm:text-2xl font-black shadow-[0_8px_25px_rgba(204,31,26,0.4)] active:scale-[0.98] transition-transform rounded-2xl"
                 isLoading={isLoading}
               >
-                تأكيد طلبك الآن 🚀 ({finalTotal} ج)
+                {t.confirmOrderNow} ({finalTotal} {t.currency})
               </Button>
             </div>
           </form>

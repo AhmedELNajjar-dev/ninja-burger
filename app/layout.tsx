@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Cairo } from 'next/font/google'
 import './globals.css'
 import { Analytics } from '@vercel/analytics/next'
+import { LanguageProvider } from '@/components/LanguageProvider'
 
 const cairo = Cairo({
   subsets: ['arabic', 'latin'],
@@ -12,12 +13,12 @@ const cairo = Cairo({
 
 export const metadata: Metadata = {
   title: {
-    default: 'نينجا برجر — طعم ملوش منافس',
+    default: 'نينجا برجر — طعم ملوش منافس | Ninja Burger',
     template: '%s | نينجا برجر',
   },
   description:
     'اطلب أشهى برجر في المعادي. سندوتشات بيف سماش وتشيكن طازجة مع توصيل سريع.',
-  keywords: ['نينجا برجر', 'برجر', 'توصيل', 'المعادي', 'سندوتش', 'بيف سماش'],
+  keywords: ['نينجا برجر', 'برجر', 'توصيل', 'المعادي', 'سندوتش', 'بيف سماش', 'Ninja Burger'],
   authors: [{ name: 'Ninja Burger' }],
   creator: 'Ninja Burger',
   metadataBase: new URL(
@@ -53,7 +54,9 @@ export default function RootLayout({
         <a href="#main-content" className="skip-link">
           انتقل إلى المحتوى الرئيسي
         </a>
-        <main id="main-content">{children}</main>
+        <LanguageProvider>
+          <main id="main-content">{children}</main>
+        </LanguageProvider>
         <Analytics />
       </body>
     </html>

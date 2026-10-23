@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Clock, CheckCircle2, Truck, Award, Bell, MapPin, Calendar, XCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { Order, OrderStatus } from '@/types'
+import { useTranslation } from '@/lib/useTranslation'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/types'
 
 interface OrdersClientProps {
@@ -59,6 +60,7 @@ function playStatusSound() {
 
 export default function OrdersClient({ initialOrders, userId }: OrdersClientProps) {
   const [orders, setOrders] = useState<Order[]>(initialOrders)
+  const { t, isArabic } = useTranslation()
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [cancellingId, setCancellingId] = useState<string | null>(null)
 
@@ -154,16 +156,16 @@ export default function OrdersClient({ initialOrders, userId }: OrdersClientProp
       <div className="flex items-center justify-between gap-4 mb-6 sm:mb-8">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-ninja-dark">
-            طلباتي 📦
+            {t.myOrders} 📦
           </h1>
           <p className="text-gray-500 text-xs sm:text-sm mt-1">
             {orders.length > 0
-              ? `${orders.length} طلب في سجلّك · تحديث تلقائي مباشر`
-              : 'لا توجد طلبات بعد'}
+              ? (isArabic ? `${orders.length} طلب في سجلّك · تحديث تلقائي مباشر` : `${orders.length} orders in your history · live updates`)
+              : (isArabic ? 'لا توجد طلبات بعد' : 'No orders yet')}
           </p>
         </div>
         <Link href="/" className="btn-primary py-2 px-4 text-xs sm:text-sm shrink-0">
-          🍔 اطلب الآن
+          {t.orderNow}
         </Link>
       </div>
 
@@ -220,11 +222,11 @@ export default function OrdersClient({ initialOrders, userId }: OrdersClientProp
                         title="إلغاء الطلب قبل بدء التحضير"
                       >
                         {cancellingId === order.id ? (
-                          <span>جاري الإلغاء...</span>
+                          <span>{t.cancelling}</span>
                         ) : (
                           <>
                             <XCircle size={13} />
-                            <span>إلغاء الطلب</span>
+                            <span>{t.cancelOrder}</span>
                           </>
                         )}
                       </button>
@@ -239,8 +241,8 @@ export default function OrdersClient({ initialOrders, userId }: OrdersClientProp
                       <XCircle size={20} />
                     </div>
                     <div>
-                      <p className="font-bold text-gray-900 text-sm">تم إلغاء هذا الطلب</p>
-                      <p className="text-gray-500 text-xs mt-0.5">تم إلغاء تجهيز هذا الطلب ولن يتم احتسابه أو توصيله.</p>
+                      <p className="font-bold text-gray-900 text-sm">{t.orderCancelledTitle}</p>
+                      <p className="text-gray-500 text-xs mt-0.5">{t.orderCancelledDesc}</p>
                     </div>
                   </div>
                 ) : (
@@ -284,7 +286,7 @@ export default function OrdersClient({ initialOrders, userId }: OrdersClientProp
                                 : 'text-gray-400'
                             }`}
                           >
-                            {step.label}
+                            {isArabic ? step.label : (step.status === 'pending' ? 'Pending' : step.status === 'confirmed' ? 'Confirmed' : step.status === 'on_delivery' ? 'On Delivery' : 'Completed')}
                           </span>
                         </div>
                       )
@@ -304,11 +306,9 @@ export default function OrdersClient({ initialOrders, userId }: OrdersClientProp
                               <span>{item.name_ar}</span>
                               <span className="text-gray-400 font-normal">·</span>
                               <span className="text-gray-600 font-normal text-xs bg-white px-2 py-0.5 rounded-md border border-gray-200">
-                                {item.size === 'single'
-                                  ? 'سنجل'
-                                  : item.size === 'double'
-                                  ? 'دابل'
-                                  : 'تريبل'}
+                                {isArabic
+                                  ? (item.size === 'single' ? 'سنجل' : item.size === 'double' ? 'دابل' : 'تريبل')
+                                  : (item.size === 'single' ? 'Single' : item.size === 'double' ? 'Double' : 'Triple')}
                               </span>
                             </div>
                             {item.addons && item.addons.length > 0 && (
@@ -319,7 +319,7 @@ export default function OrdersClient({ initialOrders, userId }: OrdersClientProp
                           </div>
                           <div className="text-left shrink-0 font-bold text-ninja-dark whitespace-nowrap">
                             <span className="text-gray-400 font-normal text-xs">{item.quantity} × </span>
-                            <span>{item.lineTotal} ج</span>
+                            <span>{item.lineTotal} {t.currency}</span>
                           </div>
                         </li>
                       ))}
@@ -329,7 +329,7 @@ export default function OrdersClient({ initialOrders, userId }: OrdersClientProp
                   {/* Notes if available */}
                   {order.notes && (
                     <div className="text-xs text-gray-600 bg-yellow-50 border border-yellow-200/60 rounded-xl px-3 py-2 mb-3">
-                      <span className="font-bold text-yellow-800">ملاحظات: </span>
+                      <span className="font-bold text-yellow-800">{isArabic ? "ملاحظات: " : "Notes: "}</span>
                       {order.notes}
                     </div>
                   )}
@@ -341,9 +341,9 @@ export default function OrdersClient({ initialOrders, userId }: OrdersClientProp
                       <span className="truncate">{order.delivery_address}</span>
                     </div>
                     <div className="flex items-center justify-between sm:justify-end gap-2 text-left">
-                      <span className="text-xs text-gray-400">الإجمالي:</span>
+                      <span className="text-xs text-gray-400">{t.total}:</span>
                       <span className="font-black text-xl text-ninja-red">
-                        {Number(order.total_amount).toFixed(0)} ج
+                        {Number(order.total_amount).toFixed(0)} {t.currency}
                       </span>
                     </div>
                   </div>

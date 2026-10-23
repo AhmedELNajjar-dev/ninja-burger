@@ -7,9 +7,10 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { motion } from 'framer-motion'
-import { Eye, EyeOff, Phone, Mail, AlertCircle } from 'lucide-react'
+import { Eye, EyeOff, Phone, Mail, AlertCircle, Globe } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useCartStore } from '@/store/cartStore'
+import { useTranslation } from '@/lib/useTranslation'
 
 const loginSchema = z.object({
   identifier: z.string().min(3, 'أدخل البريد الإلكتروني أو رقم الهاتف'),
@@ -27,6 +28,7 @@ function LoginFormContent() {
       ? rawRedirect
       : '/'
   const supabase = createClient()
+  const { t, isArabic, toggleLanguage } = useTranslation()
 
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -86,6 +88,18 @@ function LoginFormContent() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
+          {/* Language Toggle */}
+          <div className="flex justify-end mb-3">
+            <button
+              type="button"
+              onClick={toggleLanguage}
+              className="flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-gray-50 text-gray-700 rounded-full text-xs font-bold border border-gray-200 shadow-sm cursor-pointer transition-all"
+            >
+              <Globe size={14} className="text-ninja-red" />
+              <span>{t.langButtonText}</span>
+            </button>
+          </div>
+
           {/* Logo */}
           <div className="text-center mb-8">
             <Link href="/" className="inline-block">
@@ -98,10 +112,10 @@ function LoginFormContent() {
               </div>
             </Link>
             <h1 className="text-2xl font-extrabold text-ninja-dark mt-5">
-              أهلاً بك مجدداً!
+              {t.welcomeBack}
             </h1>
             <p className="text-gray-500 mt-1">
-              سجّل دخولك لمتابعة طلباتك 🍔
+              {t.signInSubtitle}
             </p>
           </div>
 
@@ -123,7 +137,7 @@ function LoginFormContent() {
               {/* Identifier field */}
               <div>
                 <label className="block text-sm font-semibold text-ninja-dark mb-2">
-                  البريد الإلكتروني أو رقم الهاتف
+                  {t.identifier}
                 </label>
                 <div className="relative">
                   <input
@@ -131,7 +145,7 @@ function LoginFormContent() {
                     type="text"
                     inputMode="email"
                     autoComplete="email"
-                    placeholder="example@email.com أو 01012345678"
+                    placeholder={t.identifierPlaceholder}
                     className={`input-field pe-11 ${errors.identifier ? 'input-field-error' : ''}`}
                     dir="ltr"
                   />
@@ -147,7 +161,7 @@ function LoginFormContent() {
               {/* Password field */}
               <div>
                 <label className="block text-sm font-semibold text-ninja-dark mb-2">
-                  كلمة المرور
+                  {t.password}
                 </label>
                 <div className="relative">
                   <input
@@ -185,10 +199,10 @@ function LoginFormContent() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
-                    جاري الدخول...
+                    {t.loggingIn}
                   </span>
                 ) : (
-                  'تسجيل الدخول 🚀'
+                  t.signInBtn
                 )}
               </motion.button>
             </form>
@@ -196,18 +210,18 @@ function LoginFormContent() {
             {/* Divider */}
             <div className="flex items-center gap-3 my-6">
               <div className="flex-1 h-px bg-gray-200" />
-              <span className="text-gray-400 text-sm">أو</span>
+              <span className="text-gray-400 text-sm">{t.or}</span>
               <div className="flex-1 h-px bg-gray-200" />
             </div>
 
             {/* Register link */}
             <p className="text-center text-gray-600">
-              ليس لديك حساب؟{' '}
+              {t.noAccount}{' '}
               <Link
                 href="/register"
                 className="text-ninja-red font-bold hover:underline"
               >
-                إنشاء حساب جديد
+                {t.register}
               </Link>
             </p>
           </div>
@@ -215,7 +229,7 @@ function LoginFormContent() {
           {/* Back to menu */}
           <div className="text-center mt-6">
             <Link href="/" className="text-gray-500 hover:text-ninja-red text-sm transition-colors">
-              ← العودة للقائمة
+              {isArabic ? '← العودة للقائمة' : '← Back to Menu'}
             </Link>
           </div>
         </motion.div>

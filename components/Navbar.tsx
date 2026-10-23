@@ -3,10 +3,11 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShoppingCart, Menu, User, LogOut, ShieldCheck, X } from 'lucide-react';
+import { ShoppingCart, Menu, User, LogOut, ShieldCheck, X, Globe } from 'lucide-react';
 import { cn } from './ui/cn';
 import { useCartStore } from '@/store/cartStore';
 import { createClient } from '@/lib/supabase/client';
+import { useTranslation } from '@/lib/useTranslation';
 import type { Profile } from '@/types';
 
 interface NavbarProps {
@@ -17,6 +18,7 @@ export function Navbar({ profile }: NavbarProps = {}) {
   const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { t, isArabic, toggleLanguage } = useTranslation();
   const items = useCartStore((state) => state.items);
   const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -54,11 +56,11 @@ export function Navbar({ profile }: NavbarProps = {}) {
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-bold">
             <Link href="/" className="hover:text-ninja-yellow transition-colors">
-              المنيو
+              {t.menu}
             </Link>
             {profile && (
               <Link href="/orders" className="hover:text-ninja-yellow transition-colors">
-                طلباتي
+                {t.myOrders}
               </Link>
             )}
             {profile?.role === 'admin' && (
@@ -67,18 +69,28 @@ export function Navbar({ profile }: NavbarProps = {}) {
                 className="flex items-center gap-1 text-ninja-yellow hover:text-white transition-colors bg-white/10 px-2.5 py-1 rounded-lg"
               >
                 <ShieldCheck size={16} />
-                لوحة الإدارة
+                {t.adminDashboard}
               </Link>
             )}
           </nav>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* Language Switcher Button (Desktop & Mobile) */}
+          <button
+            onClick={toggleLanguage}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-white/15 hover:bg-white/25 active:scale-95 transition-all border border-white/20 text-white cursor-pointer shadow-sm"
+            title={isArabic ? 'Switch language to English' : 'التحويل إلى اللغة العربية'}
+          >
+            <Globe className="w-3.5 h-3.5 text-ninja-yellow" />
+            <span>{t.langButtonText}</span>
+          </button>
+
           {/* Cart button */}
           <button
-            className="relative p-2 hover:bg-red-700 rounded-full transition-colors flex items-center"
+            className="relative p-2 hover:bg-red-700 rounded-full transition-colors flex items-center cursor-pointer"
             onClick={() => useCartStore.setState({ isCartOpen: true })}
-            title="سلة الطلبات"
+            title={t.cart}
           >
             <ShoppingCart className="w-6 h-6" />
             {totalItems > 0 && (
@@ -97,8 +109,8 @@ export function Navbar({ profile }: NavbarProps = {}) {
               </span>
               <button
                 onClick={handleSignOut}
-                className="p-2 hover:bg-red-700 rounded-full transition-colors text-white/80 hover:text-white"
-                title="تسجيل الخروج"
+                className="p-2 hover:bg-red-700 rounded-full transition-colors text-white/80 hover:text-white cursor-pointer"
+                title={t.logout}
               >
                 <LogOut size={18} />
               </button>
@@ -109,13 +121,13 @@ export function Navbar({ profile }: NavbarProps = {}) {
                 href="/login"
                 className="bg-white text-ninja-red hover:bg-ninja-yellow hover:text-white px-4 py-1.5 rounded-full font-bold text-sm transition-all shadow-sm"
               >
-                تسجيل الدخول
+                {t.login}
               </Link>
               <Link
                 href="/register"
                 className="border-2 border-white/80 text-white hover:bg-white hover:text-ninja-red px-3 py-1 rounded-full font-bold text-sm transition-all"
               >
-                حساب جديد
+                {t.register}
               </Link>
             </div>
           )}
@@ -123,8 +135,8 @@ export function Navbar({ profile }: NavbarProps = {}) {
           {/* Hamburger toggle for mobile */}
           <button
             onClick={() => setMobileMenuOpen((v) => !v)}
-            className="md:hidden p-2 hover:bg-red-700 rounded-full transition-colors"
-            aria-label="القائمة"
+            className="md:hidden p-2 hover:bg-red-700 rounded-full transition-colors cursor-pointer"
+            aria-label="Menu"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -139,7 +151,7 @@ export function Navbar({ profile }: NavbarProps = {}) {
             onClick={() => setMobileMenuOpen(false)}
             className="block text-base font-bold py-2 border-b border-white/10"
           >
-            🍔 المنيو
+            🍔 {t.menu}
           </Link>
           {profile ? (
             <>
@@ -148,7 +160,7 @@ export function Navbar({ profile }: NavbarProps = {}) {
                 onClick={() => setMobileMenuOpen(false)}
                 className="block text-base font-bold py-2 border-b border-white/10"
               >
-                📦 طلباتي
+                📦 {t.myOrders}
               </Link>
               {profile.role === 'admin' && (
                 <Link
@@ -156,19 +168,19 @@ export function Navbar({ profile }: NavbarProps = {}) {
                   onClick={() => setMobileMenuOpen(false)}
                   className="block text-base font-bold py-2 text-ninja-yellow border-b border-white/10"
                 >
-                  🛡️ لوحة الإدارة
+                  🛡️ {t.adminDashboard}
                 </Link>
               )}
               <div className="flex items-center justify-between pt-2">
                 <span className="text-sm font-bold text-white/90">
-                  👤 مرحباً، {profile.full_name}
+                  👤 {firstName}
                 </span>
                 <button
                   onClick={handleSignOut}
-                  className="flex items-center gap-1.5 text-xs bg-white/20 px-3 py-1.5 rounded-full font-bold hover:bg-white/30"
+                  className="flex items-center gap-1.5 text-xs bg-white/20 px-3 py-1.5 rounded-full font-bold hover:bg-white/30 cursor-pointer"
                 >
                   <LogOut size={14} />
-                  خروج
+                  {t.logout}
                 </button>
               </div>
             </>
@@ -179,14 +191,14 @@ export function Navbar({ profile }: NavbarProps = {}) {
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full text-center bg-white text-ninja-red font-bold py-2.5 rounded-xl shadow-sm text-base"
               >
-                تسجيل الدخول 🚀
+                {t.login}
               </Link>
               <Link
                 href="/register"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full text-center border-2 border-white text-white font-bold py-2 rounded-xl text-sm"
+                className="w-full text-center border-2 border-white text-white font-bold py-2.5 rounded-xl text-base"
               >
-                إنشاء حساب جديد
+                {t.register}
               </Link>
             </div>
           )}

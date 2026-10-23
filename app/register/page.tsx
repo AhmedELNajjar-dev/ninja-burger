@@ -7,7 +7,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { motion } from 'framer-motion'
-import { Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { Eye, EyeOff, AlertCircle, CheckCircle2, Globe } from 'lucide-react'
+import { useTranslation } from '@/lib/useTranslation'
 
 const egyptianPhone = /^(\+?2)?0(10|11|12|15)[0-9]{8}$/
 
@@ -33,10 +34,11 @@ const registerSchema = z
 type RegisterForm = z.infer<typeof registerSchema>
 
 const PasswordStrength = ({ password }: { password: string }) => {
+  const { t } = useTranslation()
   const checks = [
-    { label: '8 أحرف على الأقل', pass: password.length >= 8 },
-    { label: 'حرف كبير (A-Z)', pass: /[A-Z]/.test(password) },
-    { label: 'رقم (0-9)', pass: /[0-9]/.test(password) },
+    { label: t.passwordReqMin, pass: password.length >= 8 },
+    { label: t.passwordReqUpper, pass: /[A-Z]/.test(password) },
+    { label: t.passwordReqNum, pass: /[0-9]/.test(password) },
   ]
   return (
     <div className="mt-2 space-y-1">
@@ -56,6 +58,7 @@ const PasswordStrength = ({ password }: { password: string }) => {
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { t, isArabic, toggleLanguage } = useTranslation()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -114,6 +117,18 @@ export default function RegisterPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
+          {/* Language Toggle */}
+          <div className="flex justify-end mb-3">
+            <button
+              type="button"
+              onClick={toggleLanguage}
+              className="flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-gray-50 text-gray-700 rounded-full text-xs font-bold border border-gray-200 shadow-sm cursor-pointer transition-all"
+            >
+              <Globe size={14} className="text-ninja-red" />
+              <span>{t.langButtonText}</span>
+            </button>
+          </div>
+
           {/* Logo */}
           <div className="text-center mb-8">
             <Link href="/">
@@ -125,8 +140,8 @@ export default function RegisterPage() {
                 </div>
               </div>
             </Link>
-            <h1 className="text-2xl font-extrabold text-ninja-dark mt-5">إنشاء حساب جديد</h1>
-            <p className="text-gray-500 mt-1">سجّل الآن واطلب أشهى برجر 🍔</p>
+            <h1 className="text-2xl font-extrabold text-ninja-dark mt-5">{t.registerTitle}</h1>
+            <p className="text-gray-500 mt-1">{t.registerSubtitle}</p>
           </div>
 
           <div className="bg-white rounded-3xl shadow-card p-8">
@@ -138,8 +153,8 @@ export default function RegisterPage() {
                 animate={{ opacity: 1, scale: 1 }}
               >
                 <CheckCircle2 className="text-green-500 mb-3" size={56} />
-                <h2 className="text-xl font-bold text-ninja-dark">تم إنشاء الحساب بنجاح!</h2>
-                <p className="text-gray-500 mt-2">جاري تحويلك لصفحة الدخول...</p>
+                <h2 className="text-xl font-bold text-ninja-dark">{t.accountCreatedSuccess}</h2>
+                <p className="text-gray-500 mt-2">{t.redirectingToLogin}</p>
               </motion.div>
             )}
 
@@ -161,13 +176,13 @@ export default function RegisterPage() {
                   {/* Full name */}
                   <div>
                     <label className="block text-sm font-semibold text-ninja-dark mb-2">
-                      الاسم بالكامل
+                      {t.fullName}
                     </label>
                     <input
                       {...register('full_name')}
                       type="text"
                       autoComplete="name"
-                      placeholder="أحمد محمد"
+                      placeholder={isArabic ? 'أحمد محمد' : 'Ahmed Mohamed'}
                       className={`input-field ${errors.full_name ? 'input-field-error' : ''}`}
                     />
                     {errors.full_name && (
@@ -178,7 +193,7 @@ export default function RegisterPage() {
                   {/* Phone */}
                   <div>
                     <label className="block text-sm font-semibold text-ninja-dark mb-2">
-                      رقم الهاتف
+                      {t.phone}
                     </label>
                     <input
                       {...register('phone')}
@@ -193,14 +208,14 @@ export default function RegisterPage() {
                       <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>
                     )}
                     <p className="text-gray-400 text-xs mt-1">
-                      يُستخدم لتسجيل الدخول وتأكيد وتوصيل الطلبات
+                      {t.phoneHelp}
                     </p>
                   </div>
 
                   {/* Email */}
                   <div>
                     <label className="block text-sm font-semibold text-ninja-dark mb-2">
-                      البريد الإلكتروني
+                      {t.email}
                     </label>
                     <input
                       {...register('email')}
@@ -218,7 +233,7 @@ export default function RegisterPage() {
                   {/* Password */}
                   <div>
                     <label className="block text-sm font-semibold text-ninja-dark mb-2">
-                      كلمة المرور
+                      {t.password}
                     </label>
                     <div className="relative">
                       <input
@@ -246,7 +261,7 @@ export default function RegisterPage() {
                   {/* Confirm password */}
                   <div>
                     <label className="block text-sm font-semibold text-ninja-dark mb-2">
-                      تأكيد كلمة المرور
+                      {t.confirmPassword}
                     </label>
                     <div className="relative">
                       <input
@@ -285,24 +300,24 @@ export default function RegisterPage() {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                         </svg>
-                        جاري الإنشاء...
+                        {t.creatingAccount}
                       </span>
                     ) : (
-                      'إنشاء الحساب 🎉'
+                      t.createAccountBtn
                     )}
                   </motion.button>
                 </form>
 
                 <div className="flex items-center gap-3 my-6">
                   <div className="flex-1 h-px bg-gray-200" />
-                  <span className="text-gray-400 text-sm">أو</span>
+                  <span className="text-gray-400 text-sm">{t.or}</span>
                   <div className="flex-1 h-px bg-gray-200" />
                 </div>
 
                 <p className="text-center text-gray-600">
-                  لديك حساب بالفعل؟{' '}
+                  {t.haveAccount}{' '}
                   <Link href="/login" className="text-ninja-red font-bold hover:underline">
-                    تسجيل الدخول
+                    {t.login}
                   </Link>
                 </p>
               </>
@@ -311,7 +326,7 @@ export default function RegisterPage() {
 
           <div className="text-center mt-6">
             <Link href="/" className="text-gray-500 hover:text-ninja-red text-sm transition-colors">
-              ← العودة للقائمة
+              {isArabic ? '← العودة للقائمة' : '← Back to Menu'}
             </Link>
           </div>
         </motion.div>
