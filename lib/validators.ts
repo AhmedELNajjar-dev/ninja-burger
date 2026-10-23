@@ -22,14 +22,14 @@ export const registerSchema = z.object({
 })
 
 export const checkoutSchema = z.object({
-  customer_name: z.string().min(2).max(60),
+  customer_name: z.string().min(2, 'الاسم مطلوب').max(60),
   customer_phone: z
     .string()
     .regex(egyptianPhoneRegex, 'رقم الهاتف غير صحيح'),
   delivery_address: z.string().min(3, 'أدخل اسم الشارع والمنطقة').max(300),
-  building_no: z.string().max(50).optional(),
-  floor_no: z.string().max(50).optional(),
-  apartment_no: z.string().max(50).optional(),
+  building_no: z.string().min(1, 'رقم العمارة مطلوب').max(50),
+  floor_no: z.string().min(1, 'الدور مطلوب').max(50),
+  apartment_no: z.string().min(1, 'رقم الشقة مطلوب').max(50),
   map_coordinates: z.object({ lat: z.number(), lng: z.number() }).optional(),
   map_url: z.string().optional(),
   notes: z.string().max(500).optional(),

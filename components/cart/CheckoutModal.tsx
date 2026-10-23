@@ -18,9 +18,9 @@ const checkoutSchema = z.object({
   customer_name: z.string().min(2, 'الاسم مطلوب'),
   customer_phone: z.string().min(11, 'رقم هاتف غير صالح (مثال: 01012345678)'),
   delivery_address: z.string().min(3, 'يرجى كتابة اسم الشارع والمنطقة يدوياً'),
-  building_no: z.string().optional(),
-  floor_no: z.string().optional(),
-  apartment_no: z.string().optional(),
+  building_no: z.string().min(1, 'رقم العمارة مطلوب'),
+  floor_no: z.string().min(1, 'الدور مطلوب'),
+  apartment_no: z.string().min(1, 'رقم الشقة مطلوب'),
   map_url: z.string().optional(),
   notes: z.string().optional(),
 });
@@ -196,45 +196,66 @@ export function CheckoutModal({ userPhone, userName, savedAddress }: CheckoutMod
               </p>
             </div>
 
-            {/* Building, Floor, and Apartment Numbers (Egyptian Standard) */}
+            {/* Building, Floor, and Apartment Numbers (MANDATORY FIELDS) */}
             <div className="grid grid-cols-3 gap-2 sm:gap-3">
               <div>
-                <label className="text-xs font-bold text-gray-600 mb-1 flex items-center gap-1">
-                  <Building className="w-3.5 h-3.5 text-gray-400" />
-                  رقم العمارة
+                <label className="text-xs font-bold text-gray-700 mb-1 flex items-center gap-1">
+                  <Building className="w-3.5 h-3.5 text-ninja-red" />
+                  <span>رقم العمارة <span className="text-ninja-red">*</span></span>
                 </label>
                 <input
                   type="text"
                   placeholder="15"
                   {...register('building_no')}
-                  className="w-full text-center rounded-xl border border-gray-200 px-2 py-2 text-sm text-gray-900 focus:border-ninja-red focus:outline-none focus:ring-1 focus:ring-ninja-red"
+                  className={`w-full text-center rounded-xl border px-2 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-1 ${
+                    errors.building_no
+                      ? 'border-red-400 bg-red-50/50 focus:border-red-500 focus:ring-red-500'
+                      : 'border-gray-200 focus:border-ninja-red focus:ring-ninja-red'
+                  }`}
                 />
+                {errors.building_no && (
+                  <p className="text-[10px] text-red-500 font-bold mt-1 text-center">{errors.building_no.message}</p>
+                )}
               </div>
 
               <div>
-                <label className="text-xs font-bold text-gray-600 mb-1 flex items-center gap-1">
-                  <Layers className="w-3.5 h-3.5 text-gray-400" />
-                  الدور
+                <label className="text-xs font-bold text-gray-700 mb-1 flex items-center gap-1">
+                  <Layers className="w-3.5 h-3.5 text-ninja-red" />
+                  <span>الدور <span className="text-ninja-red">*</span></span>
                 </label>
                 <input
                   type="text"
                   placeholder="الثالث"
                   {...register('floor_no')}
-                  className="w-full text-center rounded-xl border border-gray-200 px-2 py-2 text-sm text-gray-900 focus:border-ninja-red focus:outline-none focus:ring-1 focus:ring-ninja-red"
+                  className={`w-full text-center rounded-xl border px-2 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-1 ${
+                    errors.floor_no
+                      ? 'border-red-400 bg-red-50/50 focus:border-red-500 focus:ring-red-500'
+                      : 'border-gray-200 focus:border-ninja-red focus:ring-ninja-red'
+                  }`}
                 />
+                {errors.floor_no && (
+                  <p className="text-[10px] text-red-500 font-bold mt-1 text-center">{errors.floor_no.message}</p>
+                )}
               </div>
 
               <div>
-                <label className="text-xs font-bold text-gray-600 mb-1 flex items-center gap-1">
-                  <Hash className="w-3.5 h-3.5 text-gray-400" />
-                  رقم الشقة
+                <label className="text-xs font-bold text-gray-700 mb-1 flex items-center gap-1">
+                  <Hash className="w-3.5 h-3.5 text-ninja-red" />
+                  <span>رقم الشقة <span className="text-ninja-red">*</span></span>
                 </label>
                 <input
                   type="text"
                   placeholder="6"
                   {...register('apartment_no')}
-                  className="w-full text-center rounded-xl border border-gray-200 px-2 py-2 text-sm text-gray-900 focus:border-ninja-red focus:outline-none focus:ring-1 focus:ring-ninja-red"
+                  className={`w-full text-center rounded-xl border px-2 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-1 ${
+                    errors.apartment_no
+                      ? 'border-red-400 bg-red-50/50 focus:border-red-500 focus:ring-red-500'
+                      : 'border-gray-200 focus:border-ninja-red focus:ring-ninja-red'
+                  }`}
                 />
+                {errors.apartment_no && (
+                  <p className="text-[10px] text-red-500 font-bold mt-1 text-center">{errors.apartment_no.message}</p>
+                )}
               </div>
             </div>
             
@@ -266,9 +287,14 @@ export function CheckoutModal({ userPhone, userName, savedAddress }: CheckoutMod
               </div>
             </div>
 
-            <div className="pt-2">
-              <Button type="submit" className="w-full h-13 text-lg font-black shadow-ninja" isLoading={isLoading}>
-                تأكيد الطلب 🚀
+            {/* Big, Prominent Order Confirmation Button */}
+            <div className="pt-3">
+              <Button
+                type="submit"
+                className="w-full h-16 text-xl sm:text-2xl font-black shadow-[0_8px_25px_rgba(204,31,26,0.4)] active:scale-[0.98] transition-transform rounded-2xl"
+                isLoading={isLoading}
+              >
+                تأكيد طلبك الآن 🚀 ({finalTotal} ج)
               </Button>
             </div>
           </form>
