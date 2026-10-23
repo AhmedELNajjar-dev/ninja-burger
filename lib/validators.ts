@@ -26,7 +26,12 @@ export const checkoutSchema = z.object({
   customer_phone: z
     .string()
     .regex(egyptianPhoneRegex, 'رقم الهاتف غير صحيح'),
-  delivery_address: z.string().min(10, 'أدخل عنوان التوصيل بالتفصيل').max(300),
+  delivery_address: z.string().min(3, 'أدخل اسم الشارع والمنطقة').max(300),
+  building_no: z.string().max(50).optional(),
+  floor_no: z.string().max(50).optional(),
+  apartment_no: z.string().max(50).optional(),
+  map_coordinates: z.object({ lat: z.number(), lng: z.number() }).optional(),
+  map_url: z.string().optional(),
   notes: z.string().max(500).optional(),
   items: z
     .array(
@@ -48,14 +53,14 @@ export const checkoutSchema = z.object({
       })
     )
     .min(1, 'السلة فارغة'),
-  total_amount: z.number().positive(),
+  total_amount: z.number().positive('الإجمالي غير صحيح'),
 })
 
 export const updateStatusSchema = z.object({
   status: z.enum(['pending', 'confirmed', 'on_delivery', 'finished']),
 })
 
-export type LoginInput = z.infer<typeof loginSchema>
-export type RegisterInput = z.infer<typeof registerSchema>
-export type CheckoutInput = z.infer<typeof checkoutSchema>
-export type UpdateStatusInput = z.infer<typeof updateStatusSchema>
+export type LoginFormValues = z.infer<typeof loginSchema>
+export type RegisterFormValues = z.infer<typeof registerSchema>
+export type CheckoutFormValues = z.infer<typeof checkoutSchema>
+export type UpdateStatusFormValues = z.infer<typeof updateStatusSchema>

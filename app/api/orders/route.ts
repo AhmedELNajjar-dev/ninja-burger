@@ -34,7 +34,37 @@ export async function POST(request: NextRequest) {
     // Get current user (optional — guest checkout allowed)
     const { data: { user } } = await supabase.auth.getUser()
 
-    const { customer_name, customer_phone, delivery_address, notes, items, total_amount } = result.data
+    const {
+      customer_name,
+      customer_phone,
+      delivery_address,
+      building_no,
+      floor_no,
+      apartment_no,
+      map_coordinates,
+      map_url,
+      notes,
+      items,
+      total_amount,
+    } = result.data
+
+    // Check if this phone number is a first-time customer
+    const { count: previousOrdersCount } = await adminClient
+      .from('orders')
+      .select('id', { count: 'exact', head: true })
+      .eq('customer_phone', customer_phone)
+
+    const isFirstOrder = (previousOrdersCount ?? 0) === 0
+
+    // Assemble full readable address with building, floor and apartment
+    const addressDetailsParts = [
+      delivery_address,
+      building_no ? `عمارة: ${building_no}` : null,
+      floor_no ? `الدور: ${floor_no}` : null,
+      apartment_no ? `شقة: ${apartment_no}` : null,
+    ].filter(Boolean)
+
+    const fullAddress = addressDetailsParts.join(' | ')
 
     // Insert order using admin client (bypasses RLS for INSERT)
     const { data: order, error } = await adminClient
@@ -43,7 +73,7 @@ export async function POST(request: NextRequest) {
         user_id: user?.id ?? null,
         customer_name,
         customer_phone,
-        delivery_address,
+        delivery_address: fullAddress,
         notes: notes ?? null,
         items,
         total_amount,
@@ -60,8 +90,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Send Discord notification asynchronously (don't block the response)
-    sendOrderNotification(order as any).then((success) => {
+    // Attach transient map_url & is_first_order attributes for alerts
+    const orderWithMetadata = {
+      ...order,
+      map_url: map_url || (map_coordinates ? `https://maps.google.com/?q=${map_coordinates.lat},${map_coordinates.lng}` : null),
+      is_first_order: isFirstOrder,
+    }
+
+    // Send Discord notification asynchronously with map link & first-timer alert
+    sendOrderNotification(orderWithMetadata as any).then((success) => {
       if (success) {
         adminClient
           .from('orders')
@@ -71,7 +108,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    return NextResponse.json({ data: order }, { status: 201 })
+    return NextResponse.json({ data: orderWithMetadata }, { status: 201 })
   } catch {
     return NextResponse.json({ error: 'حدث خطأ في الخادم' }, { status: 500 })
   }
@@ -109,7 +146,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ data: orders })
+    // For each order, compute if it's the customer's first order
+    const phoneCounts: Record<string, number> = {}
+    orders?.forEach((o: any) => {
+      phoneCounts[o.customer_phone] = (phoneCounts[o.customer_phone] || 0) + 1
+    })
+
+    const enrichedOrders = orders?.map((o: any) => ({
+      ...o,
+      is_first_order: phoneCounts[o.customer_phone] <= 1,
+    }))
+
+    return NextResponse.json({ data: enrichedOrders })
   } catch {
     return NextResponse.json({ error: 'حدث خطأ في الخادم' }, { status: 500 })
   }

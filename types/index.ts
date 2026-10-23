@@ -117,6 +117,12 @@ export interface Order {
   customer_name: string
   customer_phone: string
   delivery_address: string
+  building_no?: string | null
+  floor_no?: string | null
+  apartment_no?: string | null
+  map_coordinates?: { lat: number; lng: number } | null
+  map_url?: string | null
+  is_first_order?: boolean
   notes: string | null
   items: OrderItemSnapshot[]
   total_amount: number
@@ -132,6 +138,11 @@ export interface CheckoutPayload {
   customer_name: string
   customer_phone: string
   delivery_address: string
+  building_no?: string
+  floor_no?: string
+  apartment_no?: string
+  map_coordinates?: { lat: number; lng: number }
+  map_url?: string
   notes?: string
   items: OrderItemSnapshot[]
   total_amount: number

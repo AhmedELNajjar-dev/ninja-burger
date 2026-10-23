@@ -20,12 +20,14 @@ export async function sendOrderNotification(order: Order): Promise<boolean> {
     return false
   }
 
-  const embed = {
-    title: `🍔 طلب جديد #${String(order.order_number).padStart(4, '0')}`,
-    color: 0xCC1F1A, // Ninja Red
+  const firstTimerTag = order.is_first_order ? ' ⚠️ [عميل جديد — أول طلب]' : ' ⭐ [عميل سابق]'
+
+  const embed: any = {
+    title: `🍔 طلب جديد #${String(order.order_number).padStart(4, '0')}${firstTimerTag}`,
+    color: order.is_first_order ? 0xF5A623 : 0xCC1F1A, // Yellow if new customer, Red if repeat
     fields: [
       { name: '👤 العميل', value: order.customer_name, inline: true },
-      { name: '📞 الهاتف', value: order.customer_phone, inline: true },
+      { name: '📞 الهاتف', value: `${order.customer_phone} (${order.is_first_order ? 'يرجى الاتصال للتأكيد 📞' : 'عميل موثوق'})`, inline: true },
       { name: '\u200b', value: '\u200b', inline: true }, // spacer
       { name: '📍 عنوان التوصيل', value: order.delivery_address, inline: false },
       { name: '🛒 الطلبات', value: formatItems(order.items), inline: false },
@@ -34,6 +36,14 @@ export async function sendOrderNotification(order: Order): Promise<boolean> {
     ],
     footer: { text: 'نينجا برجر — نظام الطلبات' },
     timestamp: new Date(order.created_at).toISOString(),
+  }
+
+  if (order.map_url) {
+    embed.fields.push({
+      name: '🗺️ لوكيشن الخريطة',
+      value: `[عرض الموقع على Google Maps](${order.map_url})`,
+      inline: false,
+    })
   }
 
   if (order.notes) {
