@@ -5,7 +5,7 @@ const egyptianPhoneRegex = /^(\+?2)?0(10|11|12|15)[0-9]{8}$/
 
 export const loginSchema = z.object({
   identifier: z.string().min(3, 'أدخل البريد الإلكتروني أو رقم الهاتف'),
-  password: z.string().min(6, 'كلمة المرور يجب أن تكون 6 أحرف على الأقل'),
+  password: z.string().min(8, 'كلمة المرور يجب أن تكون 8 أحرف على الأقل'),
 })
 
 export const registerSchema = z.object({
@@ -30,30 +30,36 @@ export const checkoutSchema = z.object({
   building_no: z.string().min(1, 'رقم العمارة مطلوب').max(50),
   floor_no: z.string().min(1, 'الدور مطلوب').max(50),
   apartment_no: z.string().min(1, 'رقم الشقة مطلوب').max(50),
-  map_coordinates: z.object({ lat: z.number(), lng: z.number() }).optional(),
-  map_url: z.string().optional(),
+  map_coordinates: z
+    .object({
+      lat: z.number().min(-90).max(90),
+      lng: z.number().min(-180).max(180),
+    })
+    .optional(),
+  map_url: z.string().max(300).optional(),
   notes: z.string().max(500).optional(),
   items: z
     .array(
-      z.object({
-        menuItemId: z.string().uuid(),
-        name_ar: z.string(),
-        name_en: z.string(),
-        size: z.enum(['single', 'double', 'triple']),
-        quantity: z.number().int().min(1).max(20),
-        unitPrice: z.number().positive(),
-        addons: z.array(
-          z.object({
-            id: z.string(),
-            name_ar: z.string(),
-            price: z.number().nonnegative(),
-          })
-        ),
-        lineTotal: z.number().positive(),
-      })
+      z
+        .object({
+          menuItemId: z.string().uuid(),
+          size: z.enum(['single', 'double', 'triple']),
+          quantity: z.number().int().min(1).max(20),
+          addons: z
+            .array(
+              z
+                .object({
+                  id: z.string().uuid(),
+                })
+                .passthrough()
+            )
+            .max(10)
+            .default([]),
+        })
+        .passthrough()
     )
-    .min(1, 'السلة فارغة'),
-  total_amount: z.number().positive('الإجمالي غير صحيح'),
+    .min(1, 'السلة فارغة')
+    .max(30),
 })
 
 export const updateStatusSchema = z.object({

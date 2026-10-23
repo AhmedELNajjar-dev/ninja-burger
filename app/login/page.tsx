@@ -13,7 +13,7 @@ import { useCartStore } from '@/store/cartStore'
 
 const loginSchema = z.object({
   identifier: z.string().min(3, 'أدخل البريد الإلكتروني أو رقم الهاتف'),
-  password: z.string().min(1, 'كلمة المرور مطلوبة'),
+  password: z.string().min(8, 'كلمة المرور يجب أن تكون 8 أحرف على الأقل'),
 })
 
 type LoginForm = z.infer<typeof loginSchema>
@@ -21,7 +21,11 @@ type LoginForm = z.infer<typeof loginSchema>
 function LoginFormContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const redirect = searchParams.get('redirect') ?? '/'
+  const rawRedirect = searchParams.get('redirect') ?? '/'
+  const redirect =
+    rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') && !rawRedirect.includes('\\')
+      ? rawRedirect
+      : '/'
   const supabase = createClient()
 
   const [showPassword, setShowPassword] = useState(false)

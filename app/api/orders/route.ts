@@ -4,17 +4,19 @@ import { sendOrderNotification } from '@/lib/discord'
 import { checkoutSchema } from '@/lib/validators'
 import { rateLimit, getClientIp, rateLimitExceededResponse } from '@/lib/rateLimit'
 
+const DELIVERY_FEE = 35 // Fixed delivery fee in EGP
+
 export async function POST(request: NextRequest) {
   try {
     const clientIp = getClientIp(request)
     // Rate limit: max 10 orders per 30 minutes (1800s) per IP
-    const rl = await rateLimit({
+    const rlIp = await rateLimit({
       limit: 10,
       windowSeconds: 1800,
       identifier: `order_create:${clientIp}`,
     })
 
-    if (!rl.success) {
+    if (!rlIp.success) {
       return rateLimitExceededResponse('لقد قمت بإرسال عدد كبير من الطلبات في وقت قصير. يرجى الانتظار قليلاً.')
     }
 
@@ -23,16 +25,10 @@ export async function POST(request: NextRequest) {
 
     if (!result.success) {
       return NextResponse.json(
-        { error: result.error.errors[0].message },
+        { error: result.error.errors[0]?.message || 'بيانات الطلب غير صحيحة' },
         { status: 400 }
       )
     }
-
-    const supabase = createClient()
-    const adminClient = createAdminClient()
-
-    // Get current user (optional — guest checkout allowed)
-    const { data: { user } } = await supabase.auth.getUser()
 
     const {
       customer_name,
@@ -44,9 +40,102 @@ export async function POST(request: NextRequest) {
       map_coordinates,
       map_url,
       notes,
-      items,
-      total_amount,
+      items: rawItems,
     } = result.data
+
+    // Per-phone rate limit: max 5 orders per 30 minutes to prevent SMS/order flooding
+    const rlPhone = await rateLimit({
+      limit: 5,
+      windowSeconds: 1800,
+      identifier: `order_phone:${customer_phone}`,
+    })
+
+    if (!rlPhone.success) {
+      return rateLimitExceededResponse('تم تقديم عدة طلبات من هذا الرقم مؤخراً. يرجى الانتظار بضع دقائق.')
+    }
+
+    const supabase = createClient()
+    const adminClient = createAdminClient()
+
+    // Get current user (optional — guest checkout allowed)
+    const { data: { user } } = await supabase.auth.getUser()
+
+    // ── Server-Side Price Calculation & Verification ──
+    const menuIds = Array.from(new Set(rawItems.map(i => i.menuItemId)))
+    const addonIds = Array.from(new Set(rawItems.flatMap(i => (i.addons || []).map(a => a.id))))
+
+    const [{ data: menuRows, error: menuErr }, { data: addonRows, error: addonErr }] = await Promise.all([
+      adminClient
+        .from('menu_items')
+        .select('id, name_ar, name_en, price_single, price_double, price_triple, is_available')
+        .in('id', menuIds),
+      addonIds.length
+        ? adminClient.from('addons').select('id, name_ar, price').in('id', addonIds)
+        : Promise.resolve({ data: [] as any[], error: null }),
+    ])
+
+    if (menuErr || !menuRows) {
+      return NextResponse.json({ error: 'تعذر التحقق من قائمة الأصناف' }, { status: 500 })
+    }
+
+    const menuMap = new Map((menuRows as any[]).map((m: any) => [m.id, m]))
+    const addonMap = new Map(((addonRows as any[]) ?? []).map((a: any) => [a.id, a]))
+
+    let subtotal = 0
+    const verifiedItems = []
+
+    for (const it of rawItems) {
+      const m = menuMap.get(it.menuItemId)
+      if (!m || !m.is_available) {
+        return NextResponse.json({ error: `الصنف ${m?.name_ar || ''} غير متاح حالياً` }, { status: 400 })
+      }
+
+      const unitPrice = Number(
+        it.size === 'single'
+          ? m.price_single
+          : it.size === 'double'
+          ? m.price_double
+          : m.price_triple
+      )
+
+      if (!unitPrice || isNaN(unitPrice)) {
+        return NextResponse.json({ error: `الحجم المحدد (${it.size}) غير متوفر لهذا الصنف` }, { status: 400 })
+      }
+
+      const verifiedAddons = []
+      let addonsSum = 0
+
+      for (const a of it.addons || []) {
+        const addonRow = addonMap.get(a.id)
+        if (!addonRow) {
+          return NextResponse.json({ error: 'إضافة غير صحيحة أو غير متاحة' }, { status: 400 })
+        }
+        const addonPrice = Number(addonRow.price) || 0
+        verifiedAddons.push({
+          id: addonRow.id,
+          name_ar: addonRow.name_ar,
+          price: addonPrice,
+        })
+        addonsSum += addonPrice
+      }
+
+      const lineTotal = (unitPrice + addonsSum) * it.quantity
+      subtotal += lineTotal
+
+      verifiedItems.push({
+        menuItemId: m.id,
+        name_ar: m.name_ar,
+        name_en: m.name_en,
+        size: it.size,
+        quantity: it.quantity,
+        unitPrice,
+        addons: verifiedAddons,
+        lineTotal,
+      })
+    }
+
+    // Server-computed total amount including fixed delivery fee
+    const total_amount = Math.round((subtotal + DELIVERY_FEE) * 100) / 100
 
     // ── Check if this customer already has past orders ──
     const { count: pastOrdersCount } = await adminClient
@@ -66,6 +155,13 @@ export async function POST(request: NextRequest) {
 
     const fullAddress = addressDetailsParts.join(' | ')
 
+    // ── Prevent Discord Link Injection: Validate map_url strictly ──
+    const safeMapUrl = map_coordinates
+      ? `https://maps.google.com/?q=${map_coordinates.lat},${map_coordinates.lng}`
+      : map_url && /^https:\/\/(www\.)?(google\.com\/maps|maps\.google\.com)/.test(map_url)
+      ? map_url
+      : null
+
     // Insert order using admin client (bypasses RLS for INSERT)
     const { data: order, error } = await adminClient
       .from('orders')
@@ -75,7 +171,7 @@ export async function POST(request: NextRequest) {
         customer_phone,
         delivery_address: fullAddress,
         notes: notes ?? null,
-        items,
+        items: verifiedItems,
         total_amount,
         status: 'pending',
       })
@@ -100,7 +196,7 @@ export async function POST(request: NextRequest) {
             building_no: building_no || '',
             floor_no: floor_no || '',
             apartment_no: apartment_no || '',
-            map_url: map_url || '',
+            map_url: safeMapUrl || '',
             notes: notes || '',
           },
         })
@@ -112,7 +208,7 @@ export async function POST(request: NextRequest) {
     // Attach transient map_url & is_first_order attributes for alerts
     const orderWithMetadata = {
       ...order,
-      map_url: map_url || (map_coordinates ? `https://maps.google.com/?q=${map_coordinates.lat},${map_coordinates.lng}` : null),
+      map_url: safeMapUrl,
       is_first_order: isFirstTimeCustomer,
     }
 
@@ -128,7 +224,8 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({ data: orderWithMetadata }, { status: 201 })
-  } catch {
+  } catch (err) {
+    console.error('[Orders POST] unexpected error:', err)
     return NextResponse.json({ error: 'حدث خطأ في الخادم' }, { status: 500 })
   }
 }

@@ -9,6 +9,7 @@ CREATE TABLE public.profiles (
   email text,
   role text NOT NULL DEFAULT 'customer' CHECK (role IN ('customer', 'admin')),
   cart jsonb NOT NULL DEFAULT '[]'::jsonb,
+  saved_address jsonb,
   is_phone_verified boolean NOT NULL DEFAULT false,
   phone_verification_code text,
   created_at timestamptz DEFAULT now()
@@ -113,8 +114,7 @@ CREATE POLICY "Admin can manage addons" ON public.addons
 -- orders: customers see their own, admins see all
 CREATE POLICY "Users can see own orders" ON public.orders
   FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Anyone can insert an order" ON public.orders
-  FOR INSERT WITH CHECK (true);
+-- Note: Order creation is strictly performed through /api/orders via service_role to ensure price validation.
 CREATE POLICY "Admin can view all orders" ON public.orders
   FOR SELECT USING (
     EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
@@ -146,16 +146,37 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 CREATE OR REPLACE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
 ALTER PUBLICATION supabase_realtime ADD TABLE public.orders;
 
--- ─── Grant Table Permissions to API Roles ───────────────────────
--- Required when "Automatically expose new tables" is disabled in Supabase.
--- Row Level Security (RLS) then strictly governs who can read/write what.
+-- ─── Permissions & Least-Privilege Grants ───────────────────────
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
-GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
-GRANT ALL ON ALL ROUTINES IN SCHEMA public TO anon, authenticated, service_role;
 
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON ROUTINES TO anon, authenticated, service_role;
+-- service_role keeps full access (used by server API routes)
+GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
+GRANT ALL ON ALL ROUTINES IN SCHEMA public TO service_role;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON ROUTINES TO service_role;
+
+-- Remove blanket grants from client/browser roles
+REVOKE ALL ON ALL TABLES IN SCHEMA public FROM anon, authenticated;
+REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM anon, authenticated;
+REVOKE ALL ON ALL ROUTINES IN SCHEMA public FROM anon, authenticated;
+
+-- Public menu: read-only for visitors and customers
+GRANT SELECT ON public.categories, public.menu_items, public.addons TO anon, authenticated;
+-- Admin writes on menu are limited to admins by existing RLS policies
+GRANT INSERT, UPDATE, DELETE ON public.categories, public.menu_items, public.addons TO authenticated;
+
+-- Orders: customers read their own via RLS, admins update status via RLS
+GRANT SELECT ON public.orders TO authenticated;
+GRANT UPDATE (status) ON public.orders TO authenticated;
+
+-- Profiles: Column-level permissions prevent privilege escalation (cannot update 'role' or view 'phone_verification_code')
+GRANT SELECT (id, full_name, phone, email, role, cart, is_phone_verified, saved_address, created_at)
+  ON public.profiles TO authenticated;
+GRANT UPDATE (full_name) ON public.profiles TO authenticated;

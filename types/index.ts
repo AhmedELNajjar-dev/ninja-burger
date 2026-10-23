@@ -154,7 +154,7 @@ export interface CheckoutPayload {
   map_url?: string
   notes?: string
   items: OrderItemSnapshot[]
-  total_amount: number
+  total_amount?: number
 }
 
 export interface LoginPayload {

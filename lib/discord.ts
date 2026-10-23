@@ -38,7 +38,7 @@ export async function sendOrderNotification(order: Order): Promise<boolean> {
     timestamp: new Date(order.created_at).toISOString(),
   }
 
-  if (order.map_url) {
+  if (order.map_url && /^https:\/\/(www\.)?(google\.com\/maps|maps\.google\.com)/.test(order.map_url)) {
     embed.fields.push({
       name: '🗺️ لوكيشن الخريطة',
       value: `[عرض الموقع على Google Maps](${order.map_url})`,

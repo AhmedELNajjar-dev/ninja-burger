@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
 
       if (profileError || !profile) {
         return NextResponse.json(
-          { error: 'لا يوجد حساب مرتبط بهذا الرقم' },
+          { error: 'البريد الإلكتروني / رقم الهاتف أو كلمة المرور غير صحيحة' },
           { status: 401 }
         )
       }

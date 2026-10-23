@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
           { status: 409 }
         )
       }
-      return NextResponse.json({ error: authError.message }, { status: 400 })
+      return NextResponse.json({ error: 'تعذر إنشاء الحساب. تأكد من صحة البيانات المدخلة.' }, { status: 400 })
     }
 
     // Upsert profile row (handles case where handle_new_user trigger already inserted a row)
