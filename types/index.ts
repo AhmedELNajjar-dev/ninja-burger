@@ -4,6 +4,7 @@ export interface Profile {
   id: string
   full_name: string
   phone: string
+  email?: string | null
   role: 'customer' | 'admin'
   cart?: CartItem[]
   is_phone_verified?: boolean

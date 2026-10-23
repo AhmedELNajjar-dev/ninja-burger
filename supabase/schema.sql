@@ -6,6 +6,7 @@ CREATE TABLE public.profiles (
   id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   full_name text NOT NULL,
   phone text UNIQUE NOT NULL,
+  email text,
   role text NOT NULL DEFAULT 'customer' CHECK (role IN ('customer', 'admin')),
   cart jsonb NOT NULL DEFAULT '[]'::jsonb,
   is_phone_verified boolean NOT NULL DEFAULT false,
@@ -130,11 +131,12 @@ RETURNS trigger AS $$
 BEGIN
   -- Profile is inserted via the register API route with full_name + phone
   -- This trigger is a safety net for OAuth users
-  INSERT INTO public.profiles (id, full_name, phone, role)
+  INSERT INTO public.profiles (id, full_name, phone, email, role)
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'full_name', 'مستخدم'),
     COALESCE(NEW.raw_user_meta_data->>'phone', ''),
+    NEW.email,
     'customer'
   )
   ON CONFLICT (id) DO NOTHING;

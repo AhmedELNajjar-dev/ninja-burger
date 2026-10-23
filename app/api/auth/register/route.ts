@@ -82,6 +82,7 @@ export async function POST(request: NextRequest) {
         id: authData.user.id,
         full_name,
         phone,
+        email: email.trim().toLowerCase(),
         role: 'customer',
       })
 
