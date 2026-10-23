@@ -8,7 +8,6 @@ import { Modal } from '../ui/Modal';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { useCartStore } from '@/store/cartStore';
-import { CheckCircle2, MessageCircle, RefreshCw } from 'lucide-react';
 
 const checkoutSchema = z.object({
   customer_name: z.string().min(2, 'الاسم مطلوب'),
@@ -22,26 +21,16 @@ type CheckoutForm = z.infer<typeof checkoutSchema>;
 interface CheckoutModalProps {
   userPhone?: string;
   userName?: string;
-  isPhoneVerified?: boolean;
 }
 
-export function CheckoutModal({ userPhone, userName, isPhoneVerified = false }: CheckoutModalProps) {
+export function CheckoutModal({ userPhone, userName }: CheckoutModalProps) {
   const { items, getTotal, isCheckoutOpen, clearCart } = useCartStore();
   const setIsCheckoutOpen = (open: boolean) => useCartStore.setState({ isCheckoutOpen: open });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  // WhatsApp verification state within checkout
-  const [verifiedState, setVerifiedState] = useState(isPhoneVerified);
-  const [showVerifyBox, setShowVerifyBox] = useState(false);
-  const [isSendingCode, setIsSendingCode] = useState(false);
-  const [isCheckingCode, setIsCheckingCode] = useState(false);
-  const [verifyOtpInput, setVerifyOtpInput] = useState('');
-  const [verifyError, setVerifyError] = useState('');
-  const [whatsappLink, setWhatsappLink] = useState('');
-
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<CheckoutForm>({
+  const { register, handleSubmit, formState: { errors } } = useForm<CheckoutForm>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
       customer_name: userName || '',
@@ -50,60 +39,6 @@ export function CheckoutModal({ userPhone, userName, isPhoneVerified = false }: 
       notes: '',
     }
   });
-
-  const currentPhone = watch('customer_phone') || userPhone || '';
-
-  const handleSendWhatsAppCode = async () => {
-    setIsSendingCode(true);
-    setVerifyError('');
-    try {
-      const res = await fetch('/api/auth/verify-phone/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: currentPhone }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setVerifyError(data.error || 'تعذر إرسال كود التأكيد');
-        return;
-      }
-      setWhatsappLink(data.whatsappUrl);
-      setShowVerifyBox(true);
-      // Auto open WhatsApp in new tab
-      window.open(data.whatsappUrl, '_blank');
-    } catch {
-      setVerifyError('حدث خطأ في الاتصال');
-    } finally {
-      setIsSendingCode(false);
-    }
-  };
-
-  const handleConfirmCode = async () => {
-    if (!verifyOtpInput || verifyOtpInput.length !== 4) {
-      setVerifyError('أدخل الرمز المكون من 4 أرقام');
-      return;
-    }
-    setIsCheckingCode(true);
-    setVerifyError('');
-    try {
-      const res = await fetch('/api/auth/verify-phone/check', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: verifyOtpInput, phone: currentPhone }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setVerifyError(data.error || 'رمز التأكيد غير صحيح');
-        return;
-      }
-      setVerifiedState(true);
-      setShowVerifyBox(false);
-    } catch {
-      setVerifyError('فشل تأكيد الرمز');
-    } finally {
-      setIsCheckingCode(false);
-    }
-  };
 
   const onSubmit = async (data: CheckoutForm) => {
     setIsLoading(true);
@@ -159,83 +94,14 @@ export function CheckoutModal({ userPhone, userName, isPhoneVerified = false }: 
           {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm font-medium">{error}</div>}
           
           <Input label="الاسم" {...register('customer_name')} error={errors.customer_name?.message} />
-          
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-sm font-semibold text-gray-700">رقم الهاتف</label>
-              {verifiedState ? (
-                <span className="inline-flex items-center gap-1 text-xs text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                  <CheckCircle2 size={13} className="text-emerald-600" />
-                  رقم موثق عبر واتساب
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleSendWhatsAppCode}
-                  disabled={isSendingCode}
-                  className="text-xs text-emerald-700 hover:text-emerald-800 font-bold flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200 transition-colors"
-                >
-                  <MessageCircle size={13} />
-                  {isSendingCode ? 'جاري الإرسال...' : 'توثيق الرقم عبر واتساب (مجاناً)'}
-                </button>
-              )}
-            </div>
-            <Input
-              type="tel"
-              dir="ltr"
-              className="text-right"
-              {...register('customer_phone')}
-              error={errors.customer_phone?.message}
-            />
-          </div>
-
-          {/* Interactive Verification Sub-panel if user requested WhatsApp code */}
-          {showVerifyBox && !verifiedState && (
-            <div className="p-3.5 bg-emerald-50/80 rounded-2xl border border-emerald-200 text-sm space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-emerald-900 flex items-center gap-1.5">
-                  <MessageCircle size={16} className="text-emerald-600" />
-                  تأكيد رقمك عبر واتساب
-                </span>
-                {whatsappLink && (
-                  <a
-                    href={whatsappLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-xs text-emerald-700 font-bold underline"
-                  >
-                    فتح واتساب مجدداً
-                  </a>
-                )}
-              </div>
-              <p className="text-xs text-emerald-800 leading-relaxed">
-                اضغط على زر فتح واتساب لإرسال رسالة التأكيد التلقائية، ثم اكتب الكود المكون من 4 أرقام هنا:
-              </p>
-              {verifyError && (
-                <p className="text-xs text-red-600 font-medium">{verifyError}</p>
-              )}
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  maxLength={4}
-                  value={verifyOtpInput}
-                  onChange={(e) => setVerifyOtpInput(e.target.value)}
-                  placeholder="1234"
-                  dir="ltr"
-                  className="w-24 text-center font-black tracking-widest text-lg bg-white border border-emerald-300 rounded-xl px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
-                <button
-                  type="button"
-                  onClick={handleConfirmCode}
-                  disabled={isCheckingCode}
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl px-4 py-1.5 text-sm transition-colors shadow-sm"
-                >
-                  {isCheckingCode ? 'جاري التحقق...' : 'تأكيد الرمز ✓'}
-                </button>
-              </div>
-            </div>
-          )}
-
+          <Input
+            label="رقم الهاتف"
+            type="tel"
+            dir="ltr"
+            className="text-right"
+            {...register('customer_phone')}
+            error={errors.customer_phone?.message}
+          />
           <Input label="عنوان التوصيل بالتفصيل" {...register('delivery_address')} error={errors.delivery_address?.message} />
           
           <div className="flex flex-col gap-1">
@@ -255,7 +121,7 @@ export function CheckoutModal({ userPhone, userName, isPhoneVerified = false }: 
 
           <div className="pt-4">
             <Button type="submit" className="w-full h-14 text-lg" isLoading={isLoading}>
-              تأكيد الطلب
+              تأكيد الطلب 🚀
             </Button>
           </div>
         </form>

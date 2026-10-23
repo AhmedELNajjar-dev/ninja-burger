@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { sendOrderNotification } from '@/lib/discord'
+import { sendKitchenOrderAlert } from '@/lib/whatsappGateway'
 import { checkoutSchema } from '@/lib/validators'
 import { rateLimit, getClientIp, rateLimitExceededResponse } from '@/lib/rateLimit'
 
@@ -34,18 +35,6 @@ export async function POST(request: NextRequest) {
     // Get current user (optional — guest checkout allowed)
     const { data: { user } } = await supabase.auth.getUser()
 
-    let isPhoneVerified = false
-    if (user) {
-      const { data: profile } = await adminClient
-        .from('profiles')
-        .select('is_phone_verified')
-        .eq('id', user.id)
-        .maybeSingle()
-      if (profile?.is_phone_verified) {
-        isPhoneVerified = true
-      }
-    }
-
     const { customer_name, customer_phone, delivery_address, notes, items, total_amount } = result.data
 
     // Insert order using admin client (bypasses RLS for INSERT)
@@ -60,7 +49,6 @@ export async function POST(request: NextRequest) {
         items,
         total_amount,
         status: 'pending',
-        is_phone_verified: isPhoneVerified,
       })
       .select()
       .single()
@@ -82,6 +70,11 @@ export async function POST(request: NextRequest) {
           .eq('id', order.id)
           .then(() => {})
       }
+    })
+
+    // Send instant automated WhatsApp alert to the kitchen/manager
+    sendKitchenOrderAlert(order).catch((err) => {
+      console.warn('[Orders] WhatsApp kitchen alert skipped:', err)
     })
 
     return NextResponse.json({ data: order }, { status: 201 })

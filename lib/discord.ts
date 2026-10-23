@@ -25,7 +25,7 @@ export async function sendOrderNotification(order: Order): Promise<boolean> {
     color: 0xCC1F1A, // Ninja Red
     fields: [
       { name: '👤 العميل', value: order.customer_name, inline: true },
-      { name: '📞 الهاتف', value: `${order.customer_phone} ${order.is_phone_verified ? '✅ (موثق واتساب)' : '⚠️ (غير موثق)'}`, inline: true },
+      { name: '📞 الهاتف', value: order.customer_phone, inline: true },
       { name: '\u200b', value: '\u200b', inline: true }, // spacer
       { name: '📍 عنوان التوصيل', value: order.delivery_address, inline: false },
       { name: '🛒 الطلبات', value: formatItems(order.items), inline: false },
