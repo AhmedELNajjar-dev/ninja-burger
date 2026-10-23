@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Navbar } from '@/components/Navbar'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { CheckoutModal } from '@/components/cart/CheckoutModal'
+import { Footer } from '@/components/Footer'
 import HomeHero from '@/components/HomeHero'
 import { getCachedMenuData } from '@/lib/menuCache'
 import type { Category, MenuItem, Addon, Profile } from '@/types'
@@ -78,6 +79,9 @@ export default async function HomePage({
         userName={profile?.full_name}
         userPhone={profile?.phone}
       />
+
+      {/* Responsive Cross-Platform Footer */}
+      <Footer />
     </div>
   )
 }

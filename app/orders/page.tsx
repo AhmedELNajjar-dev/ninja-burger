@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Navbar from '@/components/Navbar'
+import { Footer } from '@/components/Footer'
 import OrdersClient from './OrdersClient'
 import type { Order, Profile } from '@/types'
 
@@ -32,6 +33,7 @@ export default async function OrdersPage() {
         initialOrders={(orders ?? []) as Order[]}
         userId={user.id}
       />
+      <Footer />
     </div>
   )
 }
