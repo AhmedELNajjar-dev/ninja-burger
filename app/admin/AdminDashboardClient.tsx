@@ -12,6 +12,7 @@ import {
   RefreshCw,
   LogOut,
   Bell,
+  XCircle,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { OrderCard } from '@/components/admin/OrderCard'
@@ -29,6 +30,7 @@ const STATUS_FILTERS = [
   { value: 'confirmed', label: 'مؤكد', icon: CheckCircle },
   { value: 'on_delivery', label: 'توصيل', icon: Truck },
   { value: 'finished', label: 'مكتمل', icon: Award },
+  { value: 'cancelled', label: 'ملغي', icon: XCircle },
 ] as const
 
 export default function AdminDashboardClient({ initialOrders, adminProfile }: Props) {
@@ -140,6 +142,7 @@ export default function AdminDashboardClient({ initialOrders, adminProfile }: Pr
     confirmed: orders.filter((o) => o.status === 'confirmed').length,
     on_delivery: orders.filter((o) => o.status === 'on_delivery').length,
     finished: orders.filter((o) => o.status === 'finished').length,
+    cancelled: orders.filter((o) => o.status === 'cancelled').length,
     revenue: orders
       .filter((o) => o.status === 'finished')
       .reduce((sum, o) => sum + Number(o.total_amount), 0),
@@ -221,12 +224,13 @@ export default function AdminDashboardClient({ initialOrders, adminProfile }: Pr
         </div>
 
         {/* Stats grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
           {[
             { label: 'قيد الانتظار', value: stats.pending, color: 'bg-red-50 border-red-200 text-red-700', dot: 'bg-red-500' },
             { label: 'مؤكدة', value: stats.confirmed, color: 'bg-yellow-50 border-yellow-200 text-yellow-700', dot: 'bg-yellow-500' },
             { label: 'في التوصيل', value: stats.on_delivery, color: 'bg-blue-50 border-blue-200 text-blue-700', dot: 'bg-blue-500' },
             { label: 'مكتملة', value: stats.finished, color: 'bg-green-50 border-green-200 text-green-700', dot: 'bg-green-500' },
+            { label: 'ملغية', value: stats.cancelled, color: 'bg-gray-50 border-gray-200 text-gray-500', dot: 'bg-gray-400' },
             {
               label: 'إجمالي الإيرادات',
               value: `${stats.revenue.toLocaleString()} ج`,

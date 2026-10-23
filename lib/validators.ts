@@ -63,7 +63,7 @@ export const checkoutSchema = z.object({
 })
 
 export const updateStatusSchema = z.object({
-  status: z.enum(['pending', 'confirmed', 'on_delivery', 'finished']),
+  status: z.enum(['pending', 'confirmed', 'on_delivery', 'finished', 'cancelled']),
 })
 
 export type LoginFormValues = z.infer<typeof loginSchema>

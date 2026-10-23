@@ -84,13 +84,14 @@ export interface CartItem {
 
 // ─── Order Types ─────────────────────────────────────────────────────────────
 
-export type OrderStatus = 'pending' | 'confirmed' | 'on_delivery' | 'finished'
+export type OrderStatus = 'pending' | 'confirmed' | 'on_delivery' | 'finished' | 'cancelled'
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   pending: 'قيد الانتظار',
   confirmed: 'مؤكد',
   on_delivery: 'جاري التوصيل',
   finished: 'مكتمل',
+  cancelled: 'ملغي',
 }
 
 export const ORDER_STATUS_COLORS: Record<OrderStatus, string> = {
@@ -98,6 +99,7 @@ export const ORDER_STATUS_COLORS: Record<OrderStatus, string> = {
   confirmed: 'bg-yellow-100 text-yellow-700 border-yellow-200',
   on_delivery: 'bg-blue-100 text-blue-700 border-blue-200',
   finished: 'bg-green-100 text-green-700 border-green-200',
+  cancelled: 'bg-gray-100 text-gray-500 border-gray-300',
 }
 
 export const ORDER_STATUS_FLOW: OrderStatus[] = [

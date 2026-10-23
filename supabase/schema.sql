@@ -60,7 +60,7 @@ CREATE TABLE public.orders (
   notes text,
   items jsonb NOT NULL DEFAULT '[]',
   total_amount numeric(10,2) NOT NULL,
-  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'on_delivery', 'finished')),
+  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'on_delivery', 'finished', 'cancelled')),
   discord_notified boolean NOT NULL DEFAULT false,
   created_at timestamptz DEFAULT now()
 );

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Clock, CheckCircle2, Truck, Award, Bell, MapPin, Calendar } from 'lucide-react'
+import { Clock, CheckCircle2, Truck, Award, Bell, MapPin, Calendar, XCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { Order, OrderStatus } from '@/types'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/types'
@@ -60,6 +60,37 @@ function playStatusSound() {
 export default function OrdersClient({ initialOrders, userId }: OrdersClientProps) {
   const [orders, setOrders] = useState<Order[]>(initialOrders)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [cancellingId, setCancellingId] = useState<string | null>(null)
+
+  const handleCancelOrder = async (orderId: string, orderNumber: number) => {
+    const confirmCancel = window.confirm(
+      `هل أنت متأكد من رغبتك في إلغاء طلبك #${String(orderNumber).padStart(4, '0')}؟\nلن يتم تحضير الطلب أو إرساله.`
+    )
+    if (!confirmCancel) return
+
+    setCancellingId(orderId)
+    try {
+      const res = await fetch(`/api/orders/${orderId}/cancel`, {
+        method: 'POST',
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        alert(data.error || 'تعذر إلغاء الطلب')
+        return
+      }
+
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, status: 'cancelled' } : o))
+      )
+      setToastMessage(`تم إلغاء طلبك #${String(orderNumber).padStart(4, '0')} بنجاح`)
+      setTimeout(() => setToastMessage(null), 5000)
+    } catch {
+      alert('حدث خطأ في الاتصال أثناء محاولة إلغاء الطلب')
+    } finally {
+      setCancellingId(null)
+    }
+  }
   const supabase = createClient()
 
   useEffect(() => {
@@ -174,14 +205,45 @@ export default function OrdersClient({ initialOrders, userId }: OrdersClientProp
                     </div>
                   </div>
 
-                  <span
-                    className={`status-badge text-xs sm:text-sm font-bold px-3 py-1 rounded-full ${ORDER_STATUS_COLORS[order.status]}`}
-                  >
-                    {ORDER_STATUS_LABELS[order.status]}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`status-badge text-xs sm:text-sm font-bold px-3 py-1 rounded-full ${ORDER_STATUS_COLORS[order.status]}`}
+                    >
+                      {ORDER_STATUS_LABELS[order.status]}
+                    </span>
+
+                    {order.status === 'pending' && (
+                      <button
+                        onClick={() => handleCancelOrder(order.id, order.order_number)}
+                        disabled={cancellingId === order.id}
+                        className="text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1 rounded-full transition-all flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                        title="إلغاء الطلب قبل بدء التحضير"
+                      >
+                        {cancellingId === order.id ? (
+                          <span>جاري الإلغاء...</span>
+                        ) : (
+                          <>
+                            <XCircle size={13} />
+                            <span>إلغاء الطلب</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
 
-                {/* Real-time Visual Progress Stepper */}
+                {/* Real-time Visual Progress Stepper or Cancelled Banner */}
+                {order.status === 'cancelled' ? (
+                  <div className="mx-4 sm:mx-6 my-4 p-3.5 bg-gray-50 border border-gray-200 rounded-2xl flex items-center gap-3 text-gray-700">
+                    <div className="w-9 h-9 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+                      <XCircle size={20} />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900 text-sm">تم إلغاء هذا الطلب</p>
+                      <p className="text-gray-500 text-xs mt-0.5">تم إلغاء تجهيز هذا الطلب ولن يتم احتسابه أو توصيله.</p>
+                    </div>
+                  </div>
+                ) : (
                 <div className="px-4 sm:px-6 pt-5 pb-3">
                   <div className="relative flex items-center justify-between">
                     {/* Connecting line */}
@@ -229,6 +291,7 @@ export default function OrdersClient({ initialOrders, userId }: OrdersClientProp
                     })}
                   </div>
                 </div>
+                )}
 
                 {/* Items snapshot */}
                 <div className="p-4 sm:p-5 pt-3">

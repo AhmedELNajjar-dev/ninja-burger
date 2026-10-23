@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { OrderStatus, ORDER_STATUS_LABELS, ORDER_STATUS_COLORS, ORDER_STATUS_FLOW } from '@/types';
-import { ChevronDown } from 'lucide-react';
+import { OrderStatus, ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/types';
+import { ChevronDown, XCircle } from 'lucide-react';
 import { cn } from '../ui/cn';
 
 interface StatusBadgeProps {
@@ -10,6 +10,8 @@ interface StatusBadgeProps {
   orderId: string;
   onStatusChange: (newStatus: OrderStatus) => void;
 }
+
+const STATUS_OPTIONS: OrderStatus[] = ['pending', 'confirmed', 'on_delivery', 'finished', 'cancelled'];
 
 export function StatusBadge({ status, orderId, onStatusChange }: StatusBadgeProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -28,6 +30,12 @@ export function StatusBadge({ status, orderId, onStatusChange }: StatusBadgeProp
   const handleSelect = async (newStatus: OrderStatus) => {
     setIsOpen(false);
     if (newStatus === status) return;
+
+    if (newStatus === 'cancelled') {
+      const confirmed = window.confirm('هل أنت متأكد من إلغاء هذا الطلب وإخطار المطبخ؟');
+      if (!confirmed) return;
+    }
+
     onStatusChange(newStatus);
     try {
       await fetch(`/api/orders/${orderId}/status`, {
@@ -54,17 +62,19 @@ export function StatusBadge({ status, orderId, onStatusChange }: StatusBadgeProp
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-1 w-40 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-10 overflow-hidden">
-          {ORDER_STATUS_FLOW.map((s) => (
+        <div className="absolute top-full right-0 mt-1 w-44 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-10 overflow-hidden">
+          {STATUS_OPTIONS.map((s) => (
             <button
               key={s}
               onClick={() => handleSelect(s)}
               className={cn(
-                'w-full text-right px-4 py-2 text-sm font-medium hover:bg-gray-50 transition-colors',
-                s === status ? 'text-ninja-red bg-red-50/50' : 'text-gray-700'
+                'w-full text-right px-4 py-2 text-sm font-medium hover:bg-gray-50 transition-colors flex items-center justify-between',
+                s === status ? 'text-ninja-red bg-red-50/50 font-bold' : 'text-gray-700',
+                s === 'cancelled' ? 'text-red-600 hover:bg-red-50' : ''
               )}
             >
-              {ORDER_STATUS_LABELS[s]}
+              <span>{ORDER_STATUS_LABELS[s]}</span>
+              {s === 'cancelled' && <XCircle size={14} className="text-red-500" />}
             </button>
           ))}
         </div>

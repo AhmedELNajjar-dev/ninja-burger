@@ -30,7 +30,7 @@ export function OrderCard({ order, onStatusChange, isNew }: OrderCardProps) {
       animate={{ scale: 1, opacity: 1 }}
       className={cn(
         "bg-white rounded-2xl border p-5 transition-all shadow-sm relative overflow-hidden",
-        isNew ? "border-ninja-yellow shadow-[0_0_15px_rgba(245,166,35,0.3)] animate-pulse" : "border-gray-200"
+        order.status === "cancelled" ? "border-red-200 bg-red-50/30 opacity-80" : isNew ? "border-ninja-yellow shadow-[0_0_15px_rgba(245,166,35,0.3)] animate-pulse" : "border-gray-200"
       )}
     >
       {isNew && <div className="absolute top-0 right-0 w-full h-1 bg-ninja-yellow" />}

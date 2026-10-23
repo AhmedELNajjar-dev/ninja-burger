@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { updateStatusSchema } from '@/lib/validators'
+import { sendOrderCancellationNotification } from '@/lib/discord'
 
 export async function PATCH(
   request: NextRequest,
@@ -48,6 +49,13 @@ export async function PATCH(
         { error: 'الطلب غير موجود أو حدث خطأ في التحديث' },
         { status: 404 }
       )
+    }
+
+    // If admin cancelled the order, alert the kitchen on Discord
+    if (result.data.status === 'cancelled') {
+      sendOrderCancellationNotification(order, 'admin').catch((err) => {
+        console.error('[Discord Alert Error]:', err)
+      })
     }
 
     return NextResponse.json({ data: order })

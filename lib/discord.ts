@@ -69,3 +69,49 @@ export async function sendOrderNotification(order: Order): Promise<boolean> {
     return false
   }
 }
+
+export async function sendOrderCancellationNotification(
+  order: Order,
+  cancelledBy: 'customer' | 'admin' = 'customer'
+): Promise<boolean> {
+  if (!WEBHOOK_URL) {
+    console.warn('[Discord] DISCORD_WEBHOOK_URL is not set — skipping cancellation notification.')
+    return false
+  }
+
+  const actorLabel = cancelledBy === 'customer' ? 'العميل' : 'إدارة المطعم'
+
+  const embed: any = {
+    title: `❌ تم إلغاء الطلب #${String(order.order_number).padStart(4, '0')}`,
+    description: `⚠️ **تنبيه للمطبخ:** قام **${actorLabel}** بإلغاء هذا الطلب. يرجى إيقاف أي تجهيز فوراً.`,
+    color: 0x808080, // Neutral Grey / Cancelled
+    fields: [
+      { name: '👤 العميل', value: order.customer_name, inline: true },
+      { name: '📞 الهاتف', value: order.customer_phone, inline: true },
+      { name: '💰 قيمة الطلب الملغى', value: `${order.total_amount} ج`, inline: true },
+      { name: '📍 العنوان', value: order.delivery_address, inline: false },
+      { name: '🛒 الأصناف الملغاة', value: formatItems(order.items), inline: false },
+    ],
+    footer: { text: `نينجا برجر — إشعار إلغاء طلب (${actorLabel})` },
+    timestamp: new Date().toISOString(),
+  }
+
+  try {
+    const response = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ embeds: [embed] }),
+    })
+
+    if (!response.ok) {
+      const text = await response.text()
+      console.error('[Discord] Cancellation webhook failed:', response.status, text)
+      return false
+    }
+
+    return true
+  } catch (error) {
+    console.error('[Discord] Error sending cancellation webhook:', error)
+    return false
+  }
+}
