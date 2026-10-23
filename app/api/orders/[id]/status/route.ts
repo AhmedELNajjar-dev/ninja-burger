@@ -51,11 +51,13 @@ export async function PATCH(
       )
     }
 
-    // If admin cancelled the order, alert the kitchen on Discord
+    // If admin cancelled the order, alert the kitchen on Discord (awaited for serverless)
     if (result.data.status === 'cancelled') {
-      sendOrderCancellationNotification(order, 'admin').catch((err) => {
+      try {
+        await sendOrderCancellationNotification(order, 'admin')
+      } catch (err) {
         console.error('[Discord Alert Error]:', err)
-      })
+      }
     }
 
     return NextResponse.json({ data: order })

@@ -59,10 +59,12 @@ export async function POST(
       return NextResponse.json({ error: 'فشل في إلغاء الطلب، يرجى المحاولة مرة أخرى' }, { status: 500 })
     }
 
-    // 6. Notify Kitchen on Discord asynchronously
-    sendOrderCancellationNotification(updatedOrder, 'customer').catch((err) => {
+    // 6. Notify Kitchen on Discord (awaited so serverless container completes send)
+    try {
+      await sendOrderCancellationNotification(updatedOrder, 'customer')
+    } catch (err) {
       console.error('[Discord Alert Error]:', err)
-    })
+    }
 
     return NextResponse.json({
       data: updatedOrder,

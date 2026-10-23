@@ -3,13 +3,15 @@ import { Order, OrderItemSnapshot, SIZE_LABELS } from '@/types'
 const WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL!
 
 function formatItems(items: OrderItemSnapshot[]): string {
+  if (!items || !Array.isArray(items) || items.length === 0) return 'لا توجد أصناف'
   return items
     .map((item) => {
-      const sizeLabel = SIZE_LABELS[item.size]
-      const addonStr = item.addons.length > 0
-        ? ` (+${item.addons.map(a => a.name_ar).join(', ')})`
+      const sizeLabel = (item.size && SIZE_LABELS[item.size]) || item.size || ''
+      const addons = Array.isArray(item.addons) ? item.addons : []
+      const addonStr = addons.length > 0
+        ? ` (+${addons.map(a => a.name_ar || a.id).join(', ')})`
         : ''
-      return `• ${item.quantity}x ${item.name_ar} (${sizeLabel})${addonStr} — ${item.lineTotal} ج`
+      return `• ${item.quantity || 1}x ${item.name_ar || 'صنف'} (${sizeLabel})${addonStr} — ${item.lineTotal || 0} ج`
     })
     .join('\n')
 }

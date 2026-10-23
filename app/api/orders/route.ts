@@ -212,16 +212,18 @@ export async function POST(request: NextRequest) {
       is_first_order: isFirstTimeCustomer,
     }
 
-    // Send Discord notification asynchronously with map link & first-timer alert
-    sendOrderNotification(orderWithMetadata as any).then((success) => {
+    // Send Discord notification with map link & first-timer alert (awaited for serverless)
+    try {
+      const success = await sendOrderNotification(orderWithMetadata as any)
       if (success) {
-        adminClient
+        await adminClient
           .from('orders')
           .update({ discord_notified: true })
           .eq('id', order.id)
-          .then(() => {})
       }
-    })
+    } catch (e) {
+      console.error('[Discord Order Alert Error]:', e)
+    }
 
     return NextResponse.json({ data: orderWithMetadata }, { status: 201 })
   } catch (err) {
