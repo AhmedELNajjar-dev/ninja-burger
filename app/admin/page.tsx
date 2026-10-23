@@ -31,9 +31,20 @@ export default async function AdminPage() {
     .order('created_at', { ascending: false })
     .limit(50)
 
+  // Count order frequency per phone number to identify first-time customers
+  const phoneCounts: Record<string, number> = {}
+  orders?.forEach((o: any) => {
+    phoneCounts[o.customer_phone] = (phoneCounts[o.customer_phone] || 0) + 1
+  })
+
+  const enrichedOrders = (orders ?? []).map((o: any) => ({
+    ...o,
+    is_first_order: (phoneCounts[o.customer_phone] ?? 1) === 1,
+  }))
+
   return (
     <AdminDashboardClient
-      initialOrders={(orders ?? []) as Order[]}
+      initialOrders={enrichedOrders as Order[]}
       adminProfile={profile as Profile}
     />
   )

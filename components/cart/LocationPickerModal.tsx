@@ -46,13 +46,13 @@ export function LocationPickerModal({
       );
       if (res.ok) {
         const data = await res.json();
-        const display = data.display_name?.split(',').slice(0, 3).join('، ') || 'الموقع المحدد';
+        const display = data.display_name?.split(',').slice(0, 3).join('، ') || 'الموقع المحدد على الخريطة';
         setAddressPreview(display);
       } else {
-        setAddressPreview(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+        setAddressPreview(`إحداثيات: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
       }
     } catch {
-      setAddressPreview(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+      setAddressPreview(`إحداثيات: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
     }
   };
 
@@ -80,7 +80,15 @@ export function LocationPickerModal({
       // Free OpenStreetMap Tiles
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 19,
       }).addTo(map);
+
+      // Force recalculating map size after modal animation
+      setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      }, 300);
 
       // Draggable marker
       const marker = L.marker([coords.lat, coords.lng], {
@@ -131,6 +139,7 @@ export function LocationPickerModal({
 
         if (mapInstanceRef.current && markerRef.current) {
           mapInstanceRef.current.setView([latitude, longitude], 16);
+          mapInstanceRef.current.invalidateSize();
           markerRef.current.setLatLng([latitude, longitude]);
         }
         fetchAddress(latitude, longitude);
@@ -177,16 +186,16 @@ export function LocationPickerModal({
           href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         />
 
-        {/* Map Container */}
-        <div className="relative flex-1 w-full min-h-[300px] sm:min-h-[360px] bg-gray-100">
-          <div ref={mapContainerRef} className="w-full h-full" />
+        {/* Map Container - Explicit height & width to prevent white canvas */}
+        <div className="relative flex-1 w-full min-h-[350px] sm:min-h-[400px] h-[350px] bg-slate-100">
+          <div ref={mapContainerRef} className="w-full h-full min-h-[350px] z-10" />
 
           {/* Quick GPS button */}
           <button
             type="button"
             onClick={handleDetectLocation}
             disabled={isLocating}
-            className="absolute top-3 right-3 z-[400] bg-white text-ninja-dark hover:bg-ninja-gray shadow-md px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-gray-200"
+            className="absolute top-3 right-3 z-[400] bg-white text-ninja-dark hover:bg-ninja-gray shadow-md px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-gray-200"
           >
             <Navigation className={`w-4 h-4 text-ninja-red ${isLocating ? 'animate-spin' : ''}`} />
             {isLocating ? 'جاري التحديد...' : 'موقعي الحالي 📍'}
@@ -194,7 +203,7 @@ export function LocationPickerModal({
         </div>
 
         {/* Footer Address Preview & Confirmation */}
-        <div className="p-4 bg-gray-50 border-t border-gray-100 space-y-3">
+        <div className="p-4 bg-gray-50 border-t border-gray-100 space-y-3 z-20">
           <div className="text-right">
             <span className="text-xs text-gray-500 font-semibold block">الموقع المختار:</span>
             <p className="text-sm font-bold text-ninja-dark line-clamp-1">{addressPreview}</p>

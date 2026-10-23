@@ -48,13 +48,14 @@ export async function POST(request: NextRequest) {
       total_amount,
     } = result.data
 
-    // Check if this phone number is a first-time customer
-    const { count: previousOrdersCount } = await adminClient
+    // ── Check if this customer already has past COMPLETED or CONFIRMED orders ──
+    // If they have 0 past orders, this is strictly a FIRST-TIME customer!
+    const { count: pastOrdersCount } = await adminClient
       .from('orders')
       .select('id', { count: 'exact', head: true })
       .eq('customer_phone', customer_phone)
 
-    const isFirstOrder = (previousOrdersCount ?? 0) === 0
+    const isFirstTimeCustomer = (pastOrdersCount ?? 0) === 0
 
     // Assemble full readable address with building, floor and apartment
     const addressDetailsParts = [
@@ -94,7 +95,7 @@ export async function POST(request: NextRequest) {
     const orderWithMetadata = {
       ...order,
       map_url: map_url || (map_coordinates ? `https://maps.google.com/?q=${map_coordinates.lat},${map_coordinates.lng}` : null),
-      is_first_order: isFirstOrder,
+      is_first_order: isFirstTimeCustomer,
     }
 
     // Send Discord notification asynchronously with map link & first-timer alert
@@ -146,15 +147,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // For each order, compute if it's the customer's first order
+    // Count how many orders each phone number has in the entire database
     const phoneCounts: Record<string, number> = {}
     orders?.forEach((o: any) => {
       phoneCounts[o.customer_phone] = (phoneCounts[o.customer_phone] || 0) + 1
     })
 
+    // If a phone number only appears once, this is their very first order!
     const enrichedOrders = orders?.map((o: any) => ({
       ...o,
-      is_first_order: phoneCounts[o.customer_phone] <= 1,
+      is_first_order: (phoneCounts[o.customer_phone] ?? 1) === 1,
     }))
 
     return NextResponse.json({ data: enrichedOrders })

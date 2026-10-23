@@ -9,12 +9,15 @@ import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { useCartStore } from '@/store/cartStore';
 import { LocationPickerModal } from './LocationPickerModal';
-import { MapPin, Building, Hash, Layers } from 'lucide-react';
+import { MapPin, Building, Hash, Layers, Bike } from 'lucide-react';
+
+// Delivery fee standard in Maadi / Cairo
+const DELIVERY_FEE = 20;
 
 const checkoutSchema = z.object({
   customer_name: z.string().min(2, 'الاسم مطلوب'),
   customer_phone: z.string().min(11, 'رقم هاتف غير صالح (مثال: 01012345678)'),
-  delivery_address: z.string().min(3, 'أدخل اسم الشارع والمنطقة'),
+  delivery_address: z.string().min(3, 'يرجى كتابة اسم الشارع والمنطقة يدوياً'),
   building_no: z.string().optional(),
   floor_no: z.string().optional(),
   apartment_no: z.string().optional(),
@@ -53,6 +56,8 @@ export function CheckoutModal({ userPhone, userName }: CheckoutModalProps) {
   });
 
   const selectedMapUrl = watch('map_url');
+  const subTotal = getTotal();
+  const finalTotal = subTotal + DELIVERY_FEE;
 
   const handleLocationPicked = (loc: {
     lat: number;
@@ -61,7 +66,7 @@ export function CheckoutModal({ userPhone, userName }: CheckoutModalProps) {
     mapUrl: string;
   }) => {
     setMapCoords({ lat: loc.lat, lng: loc.lng });
-    setValue('delivery_address', loc.addressText, { shouldValidate: true });
+    // Keep user's manual address intact; only set map_url link
     setValue('map_url', loc.mapUrl);
   };
 
@@ -83,7 +88,7 @@ export function CheckoutModal({ userPhone, userName }: CheckoutModalProps) {
           addons: i.addons,
           lineTotal: i.lineTotal,
         })),
-        total_amount: getTotal(),
+        total_amount: finalTotal,
       };
 
       const res = await fetch('/api/orders', {
@@ -130,24 +135,33 @@ export function CheckoutModal({ userPhone, userName }: CheckoutModalProps) {
               error={errors.customer_phone?.message}
             />
 
-            {/* Address Field with Map Picker Button */}
+            {/* Address Field with Map Pinning Option (NOT prefilled automatically) */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-sm font-semibold text-gray-700">الشارع والمنطقة</label>
+                <label className="text-sm font-semibold text-gray-700">
+                  الشارع والمنطقة <span className="text-ninja-red">*</span>
+                </label>
                 <button
                   type="button"
                   onClick={() => setShowMapModal(true)}
-                  className="text-xs font-bold text-ninja-red hover:text-red-700 flex items-center gap-1 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-full border border-red-200 transition-colors"
+                  className={`text-xs font-bold flex items-center gap-1 px-2.5 py-1 rounded-full border transition-colors ${
+                    selectedMapUrl
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                      : 'bg-red-50 hover:bg-red-100 text-ninja-red border-red-200'
+                  }`}
                 >
                   <MapPin className="w-3.5 h-3.5" />
-                  {selectedMapUrl ? 'تم تحديد الموقع ✓' : 'تحديد على الخريطة 📍'}
+                  {selectedMapUrl ? 'تم تثبيت اللوكيشن ✓' : 'تثبيت اللوكيشن على الخريطة 📍'}
                 </button>
               </div>
               <Input
-                placeholder="مثال: 156 شارع 9، ميدان دمشق، المعادي"
+                placeholder="اكتب اسم الشارع والمنطقة يدوياً (مثال: شارع 9 تقاطع ميدان دمشق)"
                 {...register('delivery_address')}
                 error={errors.delivery_address?.message}
               />
+              <p className="text-[11px] text-gray-400 mt-1">
+                اكتب العنوان بيدك لضمان الدقة في حالة التقاطعات، وثبّت الدبوس لمساعدة المندوب في الـ GPS.
+              </p>
             </div>
 
             {/* Building, Floor, and Apartment Numbers (Egyptian Standard) */}
@@ -201,10 +215,22 @@ export function CheckoutModal({ userPhone, userName }: CheckoutModalProps) {
               />
             </div>
 
-            <div className="bg-gray-50 p-4 rounded-xl mt-4">
-              <div className="flex justify-between items-center font-bold text-gray-900">
-                <span>الإجمالي المطلوب:</span>
-                <span className="text-xl text-ninja-red">{getTotal()} ج</span>
+            {/* Bill Breakdown with Delivery Fee */}
+            <div className="bg-gray-50 p-4 rounded-xl mt-4 space-y-2 border border-gray-100">
+              <div className="flex justify-between items-center text-sm text-gray-600">
+                <span>المجموع الفرعي:</span>
+                <span className="font-bold">{subTotal} ج</span>
+              </div>
+              <div className="flex justify-between items-center text-sm text-gray-600 pb-2 border-b border-gray-200">
+                <span className="flex items-center gap-1">
+                  <Bike className="w-4 h-4 text-ninja-red" />
+                  خدمة التوصيل (المعادي):
+                </span>
+                <span className="font-bold text-gray-800">{DELIVERY_FEE} ج</span>
+              </div>
+              <div className="flex justify-between items-center font-black text-gray-900 pt-1">
+                <span>الإجمالي الكلي:</span>
+                <span className="text-2xl text-ninja-red">{finalTotal} ج</span>
               </div>
             </div>
 
