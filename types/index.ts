@@ -8,6 +8,7 @@ export interface Profile {
   cart?: CartItem[]
   is_phone_verified?: boolean
   phone_verification_code?: string | null
+  phone_verification_expires_at?: string | null
   created_at: string
 }
 

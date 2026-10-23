@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { sendOrderNotification } from '@/lib/discord'
+import { sendKitchenOrderAlert } from '@/lib/whatsappGateway'
 import { checkoutSchema } from '@/lib/validators'
 import { rateLimit, getClientIp, rateLimitExceededResponse } from '@/lib/rateLimit'
 
@@ -82,6 +83,11 @@ export async function POST(request: NextRequest) {
           .eq('id', order.id)
           .then(() => {})
       }
+    })
+
+    // Send instant WhatsApp notification to the restaurant kitchen / manager
+    sendKitchenOrderAlert(order).catch((err) => {
+      console.warn('[Orders] WhatsApp kitchen alert skipped or failed:', err)
     })
 
     return NextResponse.json({ data: order }, { status: 201 })

@@ -69,10 +69,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get current verification code
+    // Get current verification code and expiration timestamp
     const { data: profile, error: fetchError } = await adminClient
       .from('profiles')
-      .select('id, phone_verification_code, is_phone_verified')
+      .select('id, phone_verification_code, phone_verification_expires_at, is_phone_verified')
       .eq('id', userId)
       .single()
 
@@ -91,6 +91,19 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    // ── Check Timeout Expiration ────────────────────────────────
+    if (profile.phone_verification_expires_at) {
+      const expiresAt = new Date(profile.phone_verification_expires_at).getTime()
+      const now = Date.now()
+      if (now > expiresAt) {
+        return NextResponse.json(
+          { error: 'انتهت صلاحية رمز التأكيد (5 دقائق). يرجى طلب رمز جديد.' },
+          { status: 400 }
+        )
+      }
+    }
+
+    // ── Check Code Match ─────────────────────────────────────────
     if (!profile.phone_verification_code || profile.phone_verification_code !== cleanCode) {
       return NextResponse.json(
         { error: 'رمز التأكيد غير صحيح. تأكد من إدخال الرمز المكون من 4 أرقام' },
@@ -98,12 +111,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Mark as verified & clear verification code
+    // Mark as verified, clear verification code & expiration
     const { error: updateError } = await adminClient
       .from('profiles')
       .update({
         is_phone_verified: true,
         phone_verification_code: null,
+        phone_verification_expires_at: null,
       })
       .eq('id', userId)
 

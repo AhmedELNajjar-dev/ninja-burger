@@ -10,6 +10,7 @@ CREATE TABLE public.profiles (
   cart jsonb NOT NULL DEFAULT '[]'::jsonb,
   is_phone_verified boolean NOT NULL DEFAULT false,
   phone_verification_code text,
+  phone_verification_expires_at timestamptz,
   created_at timestamptz DEFAULT now()
 );
 

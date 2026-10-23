@@ -202,28 +202,21 @@ export default function RegisterPage() {
                       💬
                     </div>
                     <div>
-                      <h2 className="text-xl font-black text-ninja-dark">تأكيد رقم الهاتف مجاناً عبر واتساب</h2>
+                      <h2 className="text-xl font-black text-ninja-dark">تأكيد رقم الهاتف عبر واتساب</h2>
                       <p className="text-gray-500 text-sm mt-1">
-                        أرسل رسالة التوثيق التلقائية لرقم المطعم عبر واتساب للحصول على الكود وتأكيد حسابك
+                        تم إرسال كود التأكيد المكون من 4 أرقام مباشرة إلى رقم واتساب الخاص بك. الرمز صالح لمدة 5 دقائق.
                       </p>
                     </div>
 
-                    {whatsappUrl && (
-                      <a
-                        href={whatsappUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold py-3.5 px-6 rounded-2xl shadow-md transition-all text-base"
-                      >
-                        <MessageCircle size={22} />
-                        فتح واتساب لإرسال كود التأكيد 💬
-                      </a>
-                    )}
-
                     <div className="w-full border-t border-gray-100 pt-4 space-y-3">
-                      <label className="block text-xs font-bold text-gray-500 text-right">
-                        أدخل كود التأكيد (4 أرقام):
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-bold text-gray-500 text-right">
+                          أدخل كود التأكيد (4 أرقام):
+                        </label>
+                        <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                          ⏱️ صالح لمدة 5 دقائق
+                        </span>
+                      </div>
                       <div className="flex gap-2">
                         <input
                           type="text"

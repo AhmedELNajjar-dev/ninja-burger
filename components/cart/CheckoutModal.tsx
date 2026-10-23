@@ -197,19 +197,12 @@ export function CheckoutModal({ userPhone, userName, isPhoneVerified = false }: 
                   <MessageCircle size={16} className="text-emerald-600" />
                   تأكيد رقمك عبر واتساب
                 </span>
-                {whatsappLink && (
-                  <a
-                    href={whatsappLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-xs text-emerald-700 font-bold underline"
-                  >
-                    فتح واتساب مجدداً
-                  </a>
-                )}
+                <span className="text-xs font-semibold text-emerald-700 bg-white px-2 py-0.5 rounded-full border border-emerald-200">
+                  ⏱️ صالح لمدة 5 دقائق
+                </span>
               </div>
               <p className="text-xs text-emerald-800 leading-relaxed">
-                اضغط على زر فتح واتساب لإرسال رسالة التأكيد التلقائية، ثم اكتب الكود المكون من 4 أرقام هنا:
+                تم إرسال رمز التأكيد المكون من 4 أرقام مباشرة إلى رقم واتساب الخاص بك. اكتب الكود هنا:
               </p>
               {verifyError && (
                 <p className="text-xs text-red-600 font-medium">{verifyError}</p>

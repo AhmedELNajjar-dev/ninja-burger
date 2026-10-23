@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { rateLimit, getClientIp, rateLimitExceededResponse } from '@/lib/rateLimit'
-
-const RESTAURANT_WHATSAPP = '201008427736'
+import { sendVerificationOtp } from '@/lib/whatsappGateway'
 
 function normalizePhone(input: string): string {
   const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
@@ -19,9 +18,9 @@ function normalizePhone(input: string): string {
 export async function POST(request: NextRequest) {
   try {
     const clientIp = getClientIp(request)
-    // Rate limit: max 3 WhatsApp OTP generation requests per 10 minutes (600s) per IP
+    // Rate limit: max 4 OTP requests per 10 minutes per IP
     const rl = await rateLimit({
-      limit: 3,
+      limit: 4,
       windowSeconds: 600,
       identifier: `otp_send:${clientIp}`,
     })
@@ -78,10 +77,16 @@ export async function POST(request: NextRequest) {
     // Generate random 4-digit code
     const code = Math.floor(1000 + Math.random() * 9000).toString()
 
-    // Store in public.profiles using adminClient
+    // Expiration timestamp: Exactly 5 minutes from now
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString()
+
+    // Store in public.profiles using adminClient with expiration
     const { error: updateError } = await adminClient
       .from('profiles')
-      .update({ phone_verification_code: code })
+      .update({
+        phone_verification_code: code,
+        phone_verification_expires_at: expiresAt,
+      })
       .eq('id', userId)
 
     if (updateError) {
@@ -92,16 +97,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Build standard WhatsApp deep-link
-    // Text: مرحباً نينجا برجر، كود تأكيد رقم هاتفي (010XXXXXXXX) هو: 1234
-    const message = `مرحباً نينجا برجر 🥷، كود تأكيد رقم هاتفي (${phone}) هو: ${code}`
-    const whatsappUrl = `https://wa.me/${RESTAURANT_WHATSAPP}?text=${encodeURIComponent(message)}`
+    // Send code directly to the customer's phone via the free cloud WhatsApp gateway
+    const sentDirectly = await sendVerificationOtp(phone, code)
 
     return NextResponse.json({
       success: true,
-      code,
       phone,
-      whatsappUrl,
+      sentViaGateway: sentDirectly,
+      expiresInSeconds: 300,
+      message: sentDirectly
+        ? 'تم إرسال كود التأكيد إلى تطبيق واتساب الخاص بك (صالح لمدة 5 دقائق).'
+        : 'تم توليد كود التأكيد (صالح لمدة 5 دقائق).',
     })
   } catch (error) {
     console.error('[Verify Send] Server Error:', error)
