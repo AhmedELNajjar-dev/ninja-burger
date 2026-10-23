@@ -78,6 +78,7 @@ export default async function HomePage({
       <CheckoutModal
         userName={profile?.full_name}
         userPhone={profile?.phone}
+        savedAddress={profile?.saved_address}
       />
 
       {/* Responsive Cross-Platform Footer */}

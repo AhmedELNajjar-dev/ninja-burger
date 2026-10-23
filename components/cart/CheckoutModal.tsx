@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -9,10 +9,10 @@ import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { useCartStore } from '@/store/cartStore';
 import { LocationPickerModal } from './LocationPickerModal';
-import { MapPin, Building, Hash, Layers, Bike } from 'lucide-react';
+import { MapPin, Building, Hash, Layers, Bike, Check } from 'lucide-react';
 
-// Delivery fee standard in Maadi / Cairo
-const DELIVERY_FEE = 20;
+// Fixed delivery fee requested by user
+const DELIVERY_FEE = 35;
 
 const checkoutSchema = z.object({
   customer_name: z.string().min(2, 'الاسم مطلوب'),
@@ -30,9 +30,17 @@ type CheckoutForm = z.infer<typeof checkoutSchema>;
 interface CheckoutModalProps {
   userPhone?: string;
   userName?: string;
+  savedAddress?: {
+    delivery_address?: string;
+    building_no?: string;
+    floor_no?: string;
+    apartment_no?: string;
+    map_url?: string;
+    notes?: string;
+  } | null;
 }
 
-export function CheckoutModal({ userPhone, userName }: CheckoutModalProps) {
+export function CheckoutModal({ userPhone, userName, savedAddress }: CheckoutModalProps) {
   const { items, getTotal, isCheckoutOpen, clearCart } = useCartStore();
   const setIsCheckoutOpen = (open: boolean) => useCartStore.setState({ isCheckoutOpen: open });
   const [isLoading, setIsLoading] = useState(false);
@@ -41,19 +49,35 @@ export function CheckoutModal({ userPhone, userName }: CheckoutModalProps) {
   const [showMapModal, setShowMapModal] = useState(false);
   const [mapCoords, setMapCoords] = useState<{ lat: number; lng: number } | null>(null);
 
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<CheckoutForm>({
+  const { register, handleSubmit, setValue, reset, watch, formState: { errors } } = useForm<CheckoutForm>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
       customer_name: userName || '',
       customer_phone: userPhone || '',
-      delivery_address: '',
-      building_no: '',
-      floor_no: '',
-      apartment_no: '',
-      map_url: '',
-      notes: '',
+      delivery_address: savedAddress?.delivery_address || '',
+      building_no: savedAddress?.building_no || '',
+      floor_no: savedAddress?.floor_no || '',
+      apartment_no: savedAddress?.apartment_no || '',
+      map_url: savedAddress?.map_url || '',
+      notes: savedAddress?.notes || '',
     }
   });
+
+  // When savedAddress or user details load or change, update the form automatically
+  useEffect(() => {
+    if (savedAddress || userName || userPhone) {
+      reset({
+        customer_name: userName || '',
+        customer_phone: userPhone || '',
+        delivery_address: savedAddress?.delivery_address || '',
+        building_no: savedAddress?.building_no || '',
+        floor_no: savedAddress?.floor_no || '',
+        apartment_no: savedAddress?.apartment_no || '',
+        map_url: savedAddress?.map_url || '',
+        notes: savedAddress?.notes || '',
+      });
+    }
+  }, [savedAddress, userName, userPhone, reset]);
 
   const selectedMapUrl = watch('map_url');
   const subTotal = getTotal();
@@ -66,7 +90,6 @@ export function CheckoutModal({ userPhone, userName }: CheckoutModalProps) {
     mapUrl: string;
   }) => {
     setMapCoords({ lat: loc.lat, lng: loc.lng });
-    // Keep user's manual address intact; only set map_url link
     setValue('map_url', loc.mapUrl);
   };
 
@@ -112,6 +135,8 @@ export function CheckoutModal({ userPhone, userName }: CheckoutModalProps) {
     }
   };
 
+  const hasSavedAddress = !!savedAddress?.delivery_address;
+
   return (
     <>
       <Modal isOpen={isCheckoutOpen} onClose={() => !isLoading && setIsCheckoutOpen(false)} title="تأكيد الطلب">
@@ -125,6 +150,13 @@ export function CheckoutModal({ userPhone, userName }: CheckoutModalProps) {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm font-medium">{error}</div>}
             
+            {hasSavedAddress && (
+              <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-600" />
+                <span>تم ملء عنوانك السابق المحفوظ تلقائياً للطلب السريع. يمكنك تعديله إذا أردت.</span>
+              </div>
+            )}
+
             <Input label="الاسم" {...register('customer_name')} error={errors.customer_name?.message} />
             <Input
               label="رقم الهاتف"
@@ -135,7 +167,7 @@ export function CheckoutModal({ userPhone, userName }: CheckoutModalProps) {
               error={errors.customer_phone?.message}
             />
 
-            {/* Address Field with Map Pinning Option (NOT prefilled automatically) */}
+            {/* Address Field with Map Pinning Option */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-sm font-semibold text-gray-700">
@@ -215,7 +247,7 @@ export function CheckoutModal({ userPhone, userName }: CheckoutModalProps) {
               />
             </div>
 
-            {/* Bill Breakdown with Delivery Fee */}
+            {/* Bill Breakdown with 35 EGP Delivery Fee */}
             <div className="bg-gray-50 p-4 rounded-xl mt-4 space-y-2 border border-gray-100">
               <div className="flex justify-between items-center text-sm text-gray-600">
                 <span>المجموع الفرعي:</span>
@@ -224,7 +256,7 @@ export function CheckoutModal({ userPhone, userName }: CheckoutModalProps) {
               <div className="flex justify-between items-center text-sm text-gray-600 pb-2 border-b border-gray-200">
                 <span className="flex items-center gap-1">
                   <Bike className="w-4 h-4 text-ninja-red" />
-                  خدمة التوصيل (المعادي):
+                  خدمة التوصيل:
                 </span>
                 <span className="font-bold text-gray-800">{DELIVERY_FEE} ج</span>
               </div>

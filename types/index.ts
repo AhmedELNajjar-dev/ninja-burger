@@ -8,6 +8,14 @@ export interface Profile {
   cart?: CartItem[]
   is_phone_verified?: boolean
   phone_verification_code?: string | null
+  saved_address?: {
+    delivery_address?: string
+    building_no?: string
+    floor_no?: string
+    apartment_no?: string
+    map_url?: string
+    notes?: string
+  } | null
   created_at: string
 }
 

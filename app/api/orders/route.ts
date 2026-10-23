@@ -48,8 +48,7 @@ export async function POST(request: NextRequest) {
       total_amount,
     } = result.data
 
-    // ── Check if this customer already has past COMPLETED or CONFIRMED orders ──
-    // If they have 0 past orders, this is strictly a FIRST-TIME customer!
+    // ── Check if this customer already has past orders ──
     const { count: pastOrdersCount } = await adminClient
       .from('orders')
       .select('id', { count: 'exact', head: true })
@@ -89,6 +88,25 @@ export async function POST(request: NextRequest) {
         { error: 'حدث خطأ أثناء تسجيل الطلب' },
         { status: 500 }
       )
+    }
+
+    // ── Save address into user's profile for 1-click auto-fill on next orders ──
+    if (user) {
+      adminClient
+        .from('profiles')
+        .update({
+          saved_address: {
+            delivery_address,
+            building_no: building_no || '',
+            floor_no: floor_no || '',
+            apartment_no: apartment_no || '',
+            map_url: map_url || '',
+            notes: notes || '',
+          },
+        })
+        .eq('id', user.id)
+        .then(() => {})
+        .catch((e: unknown) => console.warn('[Orders] Could not save address to profile:', e))
     }
 
     // Attach transient map_url & is_first_order attributes for alerts
