@@ -121,31 +121,39 @@ export function Footer() {
             <ul className="text-sm text-gray-400 space-y-2">
               <li>
                 <Link href="#menu" className="hover:text-white transition-colors">
-                  🍔 قائمة البرجر والسندوتشات
+                  {isArabic ? '🍔 قائمة البرجر والسندوتشات' : '🍔 Burgers & Sandwiches Menu'}
                 </Link>
               </li>
               <li>
                 <Link href="/orders" className="hover:text-white transition-colors">
-                  📦 تتبع طلباتي السابقة
+                  {isArabic ? '📦 تتبع طلباتي السابقة' : '📦 Track My Orders'}
                 </Link>
               </li>
               <li>
                 <Link href="/admin" className="hover:text-ninja-yellow transition-colors text-xs text-gray-500">
-                  🔒 لوحة تحكم الإدارة
+                  {isArabic ? '🔒 لوحة تحكم الإدارة' : '🔒 Admin Dashboard'}
                 </Link>
               </li>
             </ul>
             <div className="p-3 bg-white/5 rounded-xl border border-white/10 text-xs text-gray-400 mt-2">
-              🛡️ لحوم بلدي طازجة 100% يومياً، بدون مواد حافظة.
+              {isArabic
+                ? '🛡️ لحوم بلدي طازجة 100% يومياً، بدون مواد حافظة.'
+                : '🛡️ 100% fresh local beef daily, no preservatives.'}
             </div>
           </div>
         </div>
 
         {/* Bottom copyright bar */}
-        <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-3 text-center sm:text-right">
-          <p>© {new Date().getFullYear()} نينجا برجر (Ninja Burger). جميع الحقوق محفوظة.</p>
+        <div className={`border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-3 text-center ${isArabic ? 'sm:text-right' : 'sm:text-left'}`}>
+          <p>
+            {isArabic
+              ? `© ${new Date().getFullYear()} نينجا برجر (Ninja Burger). جميع الحقوق محفوظة.`
+              : `© ${new Date().getFullYear()} Ninja Burger. All rights reserved.`}
+          </p>
           <p className="flex items-center justify-center gap-1">
-            صُنع بحب <Heart className="w-3.5 h-3.5 text-ninja-red inline fill-ninja-red" /> لخدمة عشاق البرجر
+            {isArabic ? 'صُنع بحب' : 'Made with'}{' '}
+            <Heart className="w-3.5 h-3.5 text-ninja-red inline fill-ninja-red" />{' '}
+            {isArabic ? 'لخدمة عشاق البرجر' : 'for burger lovers'}
           </p>
         </div>
       </div>
