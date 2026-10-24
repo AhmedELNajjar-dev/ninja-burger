@@ -136,7 +136,7 @@ export default function RegisterPage() {
                 <span className="text-3xl">🥷</span>
                 <div>
                   <div className="text-2xl font-black text-white leading-none">NINJA</div>
-                  <div className="text-xl font-black text-ninja-yellow leading-none">BURGER</div>
+                  <div className="text-xl font-black text-amber-200 leading-none">BURGER</div>
                 </div>
               </div>
             </Link>

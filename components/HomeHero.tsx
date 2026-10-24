@@ -30,7 +30,7 @@ export default function HomeHero() {
               <div className="text-3xl sm:text-5xl font-black text-white leading-none tracking-tight">
                 NINJA
               </div>
-              <div className="text-2xl sm:text-4xl font-black text-ninja-yellow leading-none tracking-tight">
+              <div className="text-2xl sm:text-4xl font-black text-amber-200 leading-none tracking-tight">
                 BURGER
               </div>
             </div>
@@ -45,7 +45,7 @@ export default function HomeHero() {
             {t.brandTagline}
           </motion.p>
           <motion.p
-            className="text-white/80 text-xs sm:text-sm max-w-sm mx-auto sm:mx-0"
+            className="text-white text-xs sm:text-sm max-w-sm mx-auto sm:mx-0 font-medium"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.4 }}

@@ -55,11 +55,11 @@ export function Navbar({ profile }: NavbarProps = {}) {
             <span className="text-2xl">🥷</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-bold">
-            <Link href="/" className="hover:text-ninja-yellow transition-colors">
+            <Link href="/" className="hover:text-amber-200 transition-colors">
               {t.menu}
             </Link>
             {profile && (
-              <Link href="/orders" className="hover:text-ninja-yellow transition-colors">
+              <Link href="/orders" className="hover:text-amber-200 transition-colors">
                 {t.myOrders}
               </Link>
             )}
