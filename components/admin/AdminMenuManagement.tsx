@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Plus,
@@ -92,6 +93,61 @@ export function AdminMenuManagement({
     diffs: ChangeDiff[]
   } | null>(null)
   const [isTogglingAddon, setIsTogglingAddon] = useState(false)
+
+  // ── Supabase Realtime live sync across admin sessions ──────────────────────
+  useEffect(() => {
+    const supabase = createClient()
+    const channel = supabase
+      .channel('admin-menu-realtime-sync')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'menu_items' },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const newItem = payload.new as MenuItem
+            setItems((prev) => {
+              if (prev.some((i) => i.id === newItem.id)) return prev
+              return [...prev, newItem].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+            })
+          } else if (payload.eventType === 'UPDATE') {
+            const updated = payload.new as MenuItem
+            setItems((prev) =>
+              prev.map((i) => (i.id === updated.id ? { ...i, ...updated } : i))
+            )
+          } else if (payload.eventType === 'DELETE') {
+            const deleted = payload.old as { id: string }
+            setItems((prev) => prev.filter((i) => i.id !== deleted.id))
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'addons' },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const newAddon = payload.new as Addon
+            setAddons((prev) => {
+              if (prev.some((a) => a.id === newAddon.id)) return prev
+              return [...prev, newAddon].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+            })
+          } else if (payload.eventType === 'UPDATE') {
+            const updated = payload.new as Addon
+            setAddons((prev) =>
+              prev.map((a) => (a.id === updated.id ? { ...a, ...updated } : a))
+            )
+          } else if (payload.eventType === 'DELETE') {
+            const deleted = payload.old as { id: string }
+            setAddons((prev) => prev.filter((a) => a.id !== deleted.id))
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
+
 
   // ── Menu Items Filtering ───────────────────────────────────────────────────
   const filteredItems = items.filter((item) => {

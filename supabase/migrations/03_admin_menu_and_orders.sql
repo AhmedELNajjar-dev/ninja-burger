@@ -74,3 +74,24 @@ DROP POLICY IF EXISTS "Admin can delete menu images" ON storage.objects;
 CREATE POLICY "Admin can delete menu images" ON storage.objects
   FOR DELETE TO authenticated
   USING (bucket_id = 'menu-items' AND public.is_admin());
+
+-- ── Enable Supabase Realtime broadcast for menu, addons, and categories ─────
+DO $$
+BEGIN
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.menu_items;
+  EXCEPTION WHEN duplicate_object THEN NULL;
+  END;
+
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.addons;
+  EXCEPTION WHEN duplicate_object THEN NULL;
+  END;
+
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.categories;
+  EXCEPTION WHEN duplicate_object THEN NULL;
+  END;
+END $$;
+
+
