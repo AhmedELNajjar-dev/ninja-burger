@@ -129,11 +129,6 @@ export function Footer() {
                   {isArabic ? '📦 تتبع طلباتي السابقة' : '📦 Track My Orders'}
                 </Link>
               </li>
-              <li>
-                <Link href="/admin" className="hover:text-ninja-yellow transition-colors text-xs text-gray-500">
-                  {isArabic ? '🔒 لوحة تحكم الإدارة' : '🔒 Admin Dashboard'}
-                </Link>
-              </li>
             </ul>
             <div className="p-3 bg-white/5 rounded-xl border border-white/10 text-xs text-gray-400 mt-2">
               {isArabic
