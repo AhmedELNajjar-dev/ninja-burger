@@ -119,7 +119,11 @@ export default function HomeClient({
           }
         }
       )
-      .subscribe()
+      .subscribe((status, err) => {
+        if (err) {
+          console.warn('[Realtime Error]', err)
+        }
+      })
 
     return () => {
       supabase.removeChannel(channel)
