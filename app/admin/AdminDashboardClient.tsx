@@ -235,7 +235,7 @@ export default function AdminDashboardClient({
             <span className="text-2xl">🥷</span>
             <div>
               <span className="font-black text-white text-lg">NINJA</span>{' '}
-              <span className="font-black text-amber-200 text-lg">BURGER</span>
+              <span className="font-black text-ninja-yellow text-lg">BURGER</span>
             </div>
             <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
               Admin Portal
@@ -243,7 +243,7 @@ export default function AdminDashboardClient({
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 text-white font-medium text-sm">
+            <div className="hidden sm:flex items-center gap-2 text-white/80 text-sm">
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
               <span>مباشر</span>
             </div>
@@ -259,14 +259,14 @@ export default function AdminDashboardClient({
 
             <Link
               href="/"
-              className="hidden sm:flex items-center gap-1.5 text-white font-medium hover:text-amber-200 text-sm transition-colors"
+              className="hidden sm:flex items-center gap-1.5 text-white/80 hover:text-white text-sm transition-colors"
             >
               عرض الموقع
             </Link>
 
             <button
               onClick={handleSignOut}
-              className="flex items-center gap-1.5 text-white font-medium hover:text-amber-200 text-sm transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 text-white/80 hover:text-white text-sm transition-colors cursor-pointer"
               title="تسجيل خروج"
             >
               <LogOut size={16} />
@@ -343,7 +343,7 @@ export default function AdminDashboardClient({
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
               {[
                 { label: 'قيد الانتظار', value: stats.pending, color: 'bg-red-50 border-red-200 text-red-700', dot: 'bg-red-500' },
-                { label: 'مؤكدة', value: stats.confirmed, color: 'bg-yellow-50 border-yellow-200 text-amber-900', dot: 'bg-yellow-500' },
+                { label: 'مؤكدة', value: stats.confirmed, color: 'bg-yellow-50 border-yellow-200 text-yellow-700', dot: 'bg-yellow-500' },
                 { label: 'في التوصيل', value: stats.on_delivery, color: 'bg-blue-50 border-blue-200 text-blue-700', dot: 'bg-blue-500' },
                 { label: 'مكتملة', value: stats.finished, color: 'bg-green-50 border-green-200 text-green-700', dot: 'bg-green-500' },
                 { label: 'ملغية', value: stats.cancelled, color: 'bg-gray-50 border-gray-200 text-gray-500', dot: 'bg-gray-400' },
@@ -361,7 +361,7 @@ export default function AdminDashboardClient({
                 >
                   <div className="flex items-center gap-1.5 mb-1">
                     <div className={`w-2 h-2 rounded-full ${stat.dot}`} />
-                    <span className="text-[11px] sm:text-xs font-bold text-gray-800">{stat.label}</span>
+                    <span className="text-[11px] sm:text-xs font-semibold opacity-85">{stat.label}</span>
                   </div>
                   <div className="text-xl sm:text-2xl font-black">{stat.value}</div>
                 </motion.div>

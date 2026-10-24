@@ -27,7 +27,7 @@ export function Footer() {
               <span className="text-3xl">🥷</span>
               <div>
                 <span className="text-2xl font-black text-white">NINJA</span>{' '}
-                <span className="text-2xl font-black text-amber-200">BURGER</span>
+                <span className="text-2xl font-black text-ninja-yellow">BURGER</span>
               </div>
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed">
@@ -139,7 +139,7 @@ export function Footer() {
         </div>
 
         {/* Bottom copyright bar */}
-        <div className={`border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-300 gap-3 text-center font-medium ${isArabic ? 'sm:text-right' : 'sm:text-left'}`}>
+        <div className={`border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-3 text-center ${isArabic ? 'sm:text-right' : 'sm:text-left'}`}>
           <p>
             {isArabic
               ? `© ${new Date().getFullYear()} نينجا برجر (Ninja Burger). جميع الحقوق محفوظة.`

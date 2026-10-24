@@ -75,22 +75,14 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
   };
 
   return (
-    <div
-      aria-disabled={!item.is_available}
-      className={cn(
-        "rounded-3xl shadow-card border overflow-hidden flex flex-col transition-all duration-200",
-        !item.is_available
-          ? "bg-gray-50/70 border-gray-200 select-none"
-          : "bg-white border-gray-100 hover:shadow-ninja-lg hover:-translate-y-0.5"
-      )}
-    >
+    <div className={cn(
+      "bg-white rounded-3xl shadow-card border border-gray-100 overflow-hidden flex flex-col transition-all duration-200",
+      !item.is_available
+        ? "opacity-65 grayscale-[35%] border-gray-200 select-none"
+        : "hover:shadow-ninja-lg hover:-translate-y-0.5"
+    )}>
       {/* Food Image / Placeholder */}
-      <div className={cn(
-        "h-44 sm:h-48 relative flex items-center justify-center overflow-hidden",
-        !item.is_available
-          ? "bg-gray-200/80 opacity-60 grayscale"
-          : "bg-gradient-to-br from-red-50 via-orange-50 to-amber-50"
-      )}>
+      <div className="h-44 sm:h-48 bg-gradient-to-br from-red-50 via-orange-50 to-amber-50 relative flex items-center justify-center overflow-hidden">
         {item.image_url ? (
           <img
             src={item.image_url}
@@ -120,7 +112,7 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
             <h3 className="text-lg sm:text-xl font-black text-ninja-dark leading-tight">
               {isArabic ? item.name_ar : (item.name_en || item.name_ar)}
             </h3>
-            <span className="text-xs text-gray-600 font-bold shrink-0">
+            <span className="text-xs text-gray-400 font-semibold shrink-0">
               {isArabic ? item.name_en : item.name_ar}
             </span>
           </div>
@@ -144,7 +136,7 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
         {/* Sizes Selector (if multiple tiers exist) */}
         {sizes.length > 1 && (
           <div className="space-y-1.5">
-            <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">
+            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">
               {t.sizeLabel}:
             </span>
             <div className="grid grid-cols-3 gap-1.5 bg-gray-100/70 p-1 rounded-2xl">
@@ -159,11 +151,11 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
                       'py-1.5 px-1 rounded-xl text-xs font-bold transition-all flex flex-col items-center justify-center gap-0.5',
                       isSelected
                         ? 'bg-ninja-red text-white shadow-sm'
-                        : 'text-gray-800 hover:text-ninja-dark'
+                        : 'text-gray-600 hover:text-ninja-dark'
                     )}
                   >
                     <span>{isArabic ? SIZE_LABELS[size] : (size === 'single' ? 'Single' : size === 'double' ? 'Double' : 'Triple')}</span>
-                    <span className={cn('text-[10px] font-bold', isSelected ? 'text-white' : 'text-gray-700')}>
+                    <span className={cn('text-[10px] opacity-80', isSelected ? 'text-white' : 'text-gray-500')}>
                       {price} {t.currency}
                     </span>
                   </button>
@@ -190,7 +182,7 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-1 text-gray-500">
+              <div className="flex items-center gap-1 text-gray-400">
                 <span className="text-[11px] font-normal">
                   {showAddons ? t.close : `(${addons.length} ${t.addonsAvailable})`}
                 </span>
@@ -251,7 +243,7 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
         {/* Bottom Price + Add to Cart action */}
         <div className="pt-2 border-t border-gray-100 flex items-center justify-between gap-3">
           <div>
-            <span className="text-[10px] text-gray-600 block font-bold leading-none mb-0.5">
+            <span className="text-[10px] text-gray-400 block font-semibold leading-none mb-0.5">
               {t.priceLabel}
             </span>
             <span className="text-2xl font-black text-ninja-dark leading-none">

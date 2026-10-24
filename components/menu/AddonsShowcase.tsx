@@ -95,13 +95,13 @@ export function AddonsShowcase({ addons }: AddonsShowcaseProps) {
                   {name}
                 </h4>
                 {secondaryName && (
-                  <span className="text-[11px] text-gray-500 block font-medium mt-0.5">
+                  <span className="text-[11px] text-gray-400 block font-medium mt-0.5">
                     {secondaryName}
                   </span>
                 )}
               </div>
               <div className="mt-4 pt-2 border-t border-gray-100 flex items-center justify-between">
-                <span className="text-xs text-gray-500 font-semibold">{t.priceLabel}</span>
+                <span className="text-xs text-gray-400 font-semibold">{t.priceLabel}</span>
                 <span className="text-sm font-black text-ninja-red">
                   +{addon.price} {t.currency}
                 </span>
