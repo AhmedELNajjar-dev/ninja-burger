@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -93,6 +93,23 @@ export function AdminMenuManagement({
     diffs: ChangeDiff[]
   } | null>(null)
   const [isTogglingAddon, setIsTogglingAddon] = useState(false)
+
+  // ── Supabase Realtime Channel Reference for Instant Broadcasts ────────────
+  const realtimeChannelRef = useRef<any>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    const channel = supabase
+      .channel('customer-menu-realtime', {
+        config: { broadcast: { self: true } },
+      })
+    channel.subscribe()
+    realtimeChannelRef.current = channel
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
 
   // ── Supabase Realtime live sync across admin sessions ──────────────────────
   useEffect(() => {
@@ -193,6 +210,15 @@ export function AdminMenuManagement({
       }
       return [savedItem, ...prev]
     })
+
+    // Instant Realtime broadcast to customer menu
+    try {
+      realtimeChannelRef.current?.send({
+        type: 'broadcast',
+        event: 'item_saved',
+        payload: savedItem,
+      })
+    } catch {}
   }
 
   const handlePromptToggleAvailability = (item: MenuItem) => {
@@ -224,9 +250,20 @@ export function AdminMenuManagement({
         throw new Error(err.error || 'تعذر تعديل حالة التوفر')
       }
 
+      const updatedItem = { ...item, is_available: newAvailable }
       setItems((prev) =>
-        prev.map((i) => (i.id === item.id ? { ...i, is_available: newAvailable } : i))
+        prev.map((i) => (i.id === item.id ? updatedItem : i))
       )
+
+      // Instant Realtime broadcast to customer menu
+      try {
+        realtimeChannelRef.current?.send({
+          type: 'broadcast',
+          event: 'item_updated',
+          payload: updatedItem,
+        })
+      } catch {}
+
       setToggleDiffItem(null)
     } catch (err: any) {
       alert(err.message || 'حدث خطأ أثناء تعديل حالة الصنف')
@@ -249,7 +286,18 @@ export function AdminMenuManagement({
         throw new Error(err.error || 'تعذر حذف الصنف')
       }
 
-      setItems((prev) => prev.filter((i) => i.id !== itemToDelete.id))
+      const deletedId = itemToDelete.id
+      setItems((prev) => prev.filter((i) => i.id !== deletedId))
+
+      // Instant Realtime broadcast to customer menu
+      try {
+        realtimeChannelRef.current?.send({
+          type: 'broadcast',
+          event: 'item_deleted',
+          payload: { id: deletedId },
+        })
+      } catch {}
+
       setItemToDelete(null)
     } catch (err: any) {
       alert(err.message || 'حدث خطأ في الاتصال أثناء حذف الصنف')
@@ -295,6 +343,16 @@ export function AdminMenuManagement({
       setAddons((prev) =>
         prev.map((a) => (a.id === addon.id ? updated : a))
       )
+
+      // Instant Realtime broadcast to customer menu
+      try {
+        realtimeChannelRef.current?.send({
+          type: 'broadcast',
+          event: 'addon_updated',
+          payload: updated,
+        })
+      } catch {}
+
       setToggleDiffAddon(null)
     } catch (err: any) {
       alert(err.message || 'حدث خطأ أثناء تعديل حالة توفر الإضافة')
@@ -307,6 +365,16 @@ export function AdminMenuManagement({
     setAddons((prev) =>
       prev.map((a) => (a.id === updatedAddon.id ? updatedAddon : a))
     )
+
+    // Instant Realtime broadcast to customer menu
+    try {
+      realtimeChannelRef.current?.send({
+        type: 'broadcast',
+        event: 'addon_updated',
+        payload: updatedAddon,
+      })
+    } catch {}
+
     setEditingAddon(null)
   }
 

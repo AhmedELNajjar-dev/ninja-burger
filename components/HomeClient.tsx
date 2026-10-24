@@ -47,13 +47,51 @@ export default function HomeClient({
     }
   }, [isLoggedIn])
 
-  // ── Supabase Realtime live sync for customer menu ──────────────────────────
+  // ── Unified Instant Realtime Live Sync (Broadcast + Postgres Changes + Background Sync) ──
   useEffect(() => {
     const supabase = createClient()
 
+    // Function to fetch fresh menu data from no-store endpoint
+    const fetchFreshMenu = async () => {
+      try {
+        const res = await fetch('/api/menu', { cache: 'no-store' })
+        if (res.ok) {
+          const data = await res.json()
+          if (Array.isArray(data.items) && data.items.length > 0) setItems(data.items)
+          if (Array.isArray(data.addons) && data.addons.length > 0) setAddons(data.addons)
+          if (Array.isArray(data.categories) && data.categories.length > 0) setCategories(data.categories)
+        }
+      } catch {}
+    }
+
     const channel = supabase
-      .channel('customer-menu-realtime')
-      // Menu Items live changes (availability toggle, price edit, add, delete)
+      .channel('customer-menu-realtime', {
+        config: { broadcast: { self: false } },
+      })
+      // 1. Instant WebSocket Broadcast from Admin (< 20ms)
+      .on('broadcast', { event: 'item_updated' }, ({ payload }) => {
+        setItems((prev) =>
+          prev.map((i) => (i.id === payload.id ? { ...i, ...payload } : i))
+        )
+      })
+      .on('broadcast', { event: 'item_saved' }, ({ payload }) => {
+        setItems((prev) => {
+          const exists = prev.some((i) => i.id === payload.id)
+          if (exists) {
+            return prev.map((i) => (i.id === payload.id ? { ...i, ...payload } : i))
+          }
+          return [...prev, payload].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+        })
+      })
+      .on('broadcast', { event: 'item_deleted' }, ({ payload }) => {
+        setItems((prev) => prev.filter((i) => i.id !== payload.id))
+      })
+      .on('broadcast', { event: 'addon_updated' }, ({ payload }) => {
+        setAddons((prev) =>
+          prev.map((a) => (a.id === payload.id ? { ...a, ...payload } : a))
+        )
+      })
+      // 2. Direct Postgres Changes (for DB Studio edits)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'menu_items' },
@@ -75,7 +113,6 @@ export default function HomeClient({
           }
         }
       )
-      // Addons live changes (availability toggle, price edit)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'addons' },
@@ -97,7 +134,6 @@ export default function HomeClient({
           }
         }
       )
-      // Categories live changes
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'categories' },
@@ -119,14 +155,25 @@ export default function HomeClient({
           }
         }
       )
-      .subscribe((status, err) => {
-        if (err) {
-          console.warn('[Realtime Error]', err)
-        }
-      })
+      .subscribe()
+
+    // 3. Auto-sync on window focus & tab visibility change
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchFreshMenu()
+      }
+    }
+    window.addEventListener('focus', fetchFreshMenu)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    // 4. Background polling safeguard every 15 seconds
+    const intervalId = setInterval(fetchFreshMenu, 15000)
 
     return () => {
       supabase.removeChannel(channel)
+      window.removeEventListener('focus', fetchFreshMenu)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      clearInterval(intervalId)
     }
   }, [])
 
