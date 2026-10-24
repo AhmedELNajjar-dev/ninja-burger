@@ -49,6 +49,10 @@ export function AddonsShowcase({ addons, isLoggedIn }: AddonsShowcaseProps) {
   const { t, isArabic } = useTranslation()
   const addItem = useCartStore((state) => state.addItem)
 
+  // Only display standalone items (sides, drinks, sauce cups).
+  // Sandwich toppings are strictly customized inside the sandwich card!
+  const standaloneAddons = addons.filter((addon) => !isSandwichTopping(addon))
+
   // Auth Modal state
   const [showAuthModal, setShowAuthModal] = useState(false)
 
@@ -165,9 +169,9 @@ export function AddonsShowcase({ addons, isLoggedIn }: AddonsShowcaseProps) {
         </div>
       </motion.div>
 
-      {/* Grid of Addons */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {addons.map((addon) => {
+      {/* Grid of Standalone Items (Sides, Drinks, Sauces ONLY - No Sandwich Toppings) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5">
+        {standaloneAddons.map((addon) => {
           const emoji =
             ADDON_EMOJIS[addon.name_ar] ||
             ADDON_EMOJIS[addon.name_en] ||
@@ -175,7 +179,6 @@ export function AddonsShowcase({ addons, isLoggedIn }: AddonsShowcaseProps) {
           const name = isArabic ? addon.name_ar : (addon.name_en || addon.name_ar)
           const secondaryName = isArabic ? addon.name_en : addon.name_ar
           const isAvailable = addon.is_available !== false
-          const isTopping = isSandwichTopping(addon)
 
           const optionsList = getAddonOptions(addon)
           const hasOptions = optionsList.length > 0
@@ -199,10 +202,6 @@ export function AddonsShowcase({ addons, isLoggedIn }: AddonsShowcaseProps) {
                     <span className="text-[10px] text-red-600 font-bold bg-red-100 px-2 py-0.5 rounded-full">
                       {isArabic ? 'غير متوفر' : 'Out of stock'}
                     </span>
-                  ) : isTopping ? (
-                    <span className="text-[10px] text-gray-600 font-bold bg-gray-100 px-2 py-0.5 rounded-full">
-                      {isArabic ? 'توبينج ساندوتش' : 'Sandwich Topping'}
-                    </span>
                   ) : hasOptions ? (
                     <span className="text-[10px] text-amber-700 font-bold bg-amber-100 px-2 py-0.5 rounded-full">
                       {isArabic ? 'متعدد النكهات' : 'Multiple Flavors'}
@@ -224,14 +223,7 @@ export function AddonsShowcase({ addons, isLoggedIn }: AddonsShowcaseProps) {
                   </span>
                 )}
 
-                {/* Note about toppings vs standalone */}
-                {isTopping && (
-                  <p className="text-[11px] text-gray-400 mt-2 leading-relaxed">
-                    {isArabic
-                      ? 'يضاف كإكسترا داخل الساندوتش أثناء الطلب أو كطلب جانبي.'
-                      : 'Customizable inside sandwiches or as a side order.'}
-                  </p>
-                )}
+
                 {hasOptions && isAvailable && (
                   <p className="text-[11px] text-amber-600 font-semibold mt-2 leading-relaxed">
                     {isArabic
