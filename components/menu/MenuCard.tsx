@@ -112,7 +112,7 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
             <h3 className="text-lg sm:text-xl font-black text-ninja-dark leading-tight">
               {isArabic ? item.name_ar : (item.name_en || item.name_ar)}
             </h3>
-            <span className="text-xs text-gray-400 font-semibold shrink-0">
+            <span className="text-xs text-gray-500 font-semibold shrink-0">
               {isArabic ? item.name_en : item.name_ar}
             </span>
           </div>
@@ -136,7 +136,7 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
         {/* Sizes Selector (if multiple tiers exist) */}
         {sizes.length > 1 && (
           <div className="space-y-1.5">
-            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">
+            <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">
               {t.sizeLabel}:
             </span>
             <div className="grid grid-cols-3 gap-1.5 bg-gray-100/70 p-1 rounded-2xl">
@@ -182,7 +182,7 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-1 text-gray-400">
+              <div className="flex items-center gap-1 text-gray-500">
                 <span className="text-[11px] font-normal">
                   {showAddons ? t.close : `(${addons.length} ${t.addonsAvailable})`}
                 </span>
@@ -243,7 +243,7 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
         {/* Bottom Price + Add to Cart action */}
         <div className="pt-2 border-t border-gray-100 flex items-center justify-between gap-3">
           <div>
-            <span className="text-[10px] text-gray-400 block font-semibold leading-none mb-0.5">
+            <span className="text-[10px] text-gray-500 block font-bold leading-none mb-0.5">
               {t.priceLabel}
             </span>
             <span className="text-2xl font-black text-ninja-dark leading-none">
