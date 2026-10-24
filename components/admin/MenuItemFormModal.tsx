@@ -226,8 +226,8 @@ export function MenuItemFormModal({
       description_en: descriptionEn.trim(),
       category_id: categoryId,
       price_single: Number(priceSingle),
-      price_double: !isFriesCategory && priceDouble ? Number(priceDouble) : null,
-      price_triple: !isFriesCategory && priceTriple ? Number(priceTriple) : null,
+      price_double: isFriesCategory ? null : (priceDouble ? Number(priceDouble) : null),
+      price_triple: isFriesCategory ? null : (priceTriple ? Number(priceTriple) : null),
       image_url: imageUrl.trim(),
       is_available: isAvailable,
       sort_order: sortOrder,
@@ -408,87 +408,101 @@ export function MenuItemFormModal({
               </div>
             </div>
 
-            {/* Pricing Tiers (Single, Double, Triple - Optional for Fries) */}
-            <div className="border border-gray-150 rounded-2xl p-4 bg-gray-50/60">
-              <label className="block text-xs font-black text-gray-800 mb-2">
-                {isFriesCategory ? (
-                  <>
+            {/* Pricing Section: Single price field for Fries, 3 tiers for Burgers */}
+            {isFriesCategory ? (
+              <div className="border border-amber-200/90 rounded-2xl p-4 bg-amber-50/40 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-black text-gray-800">
                     سعر الفرايز (بالجنيه المصري) <span className="text-red-500">*</span>
-                    <span className="block text-[11px] font-medium text-emerald-600 mt-0.5">
-                      💡 قسم الفرايز له حجم وسعر موحد، ولا يتطلب أسعار دابل أو تريبل.
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    أسعار الأحجام الثلاثة (جميعها إجبارية لسندوتشات البرجر بالجنيه المصري) <span className="text-red-500">*</span>
-                  </>
-                )}
-              </label>
-              <div className={isFriesCategory ? 'grid grid-cols-1 max-w-xs' : 'grid grid-cols-3 gap-3'}>
-                <div>
-                  <span className="block text-[11px] font-bold text-gray-500 mb-1">
-                    {isFriesCategory ? 'سعر الصنف (Price)' : 'سعر سنجل (Single)'}
+                  </label>
+                  <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                    حجم وسعر موحد
                   </span>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      step="1"
-                      min="1"
-                      value={priceSingle}
-                      onChange={(e) => setPriceSingle(e.target.value)}
-                      placeholder={isFriesCategory ? '70' : '105'}
-                      required
-                      className="input-field py-2 text-sm text-center font-bold"
-                    />
-                    <span className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">ج</span>
+                </div>
+                <p className="text-[11px] text-gray-500 leading-normal">
+                  أصناف قسم الفرايز تأتي بحجم واحد فقط، لذا يتم تحديد سعر واحد فقط للصنف.
+                </p>
+                <div className="relative max-w-xs">
+                  <input
+                    type="number"
+                    step="1"
+                    min="1"
+                    value={priceSingle}
+                    onChange={(e) => setPriceSingle(e.target.value)}
+                    placeholder="70"
+                    required
+                    className="input-field py-2.5 text-base text-center font-black"
+                  />
+                  <span className="absolute end-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">ج</span>
+                </div>
+              </div>
+            ) : (
+              <div className="border border-gray-150 rounded-2xl p-4 bg-gray-50/60">
+                <label className="block text-xs font-black text-gray-800 mb-2">
+                  أسعار الأحجام الثلاثة (جميعها إجبارية بالجنيه المصري) <span className="text-red-500">*</span>
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <span className="block text-[11px] font-bold text-gray-500 mb-1">
+                      سعر سنجل (Single)
+                    </span>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        step="1"
+                        min="1"
+                        value={priceSingle}
+                        onChange={(e) => setPriceSingle(e.target.value)}
+                        placeholder="105"
+                        required
+                        className="input-field py-2 text-sm text-center font-bold"
+                      />
+                      <span className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">ج</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="block text-[11px] font-bold text-gray-500 mb-1">
+                      سعر دابل (Double)
+                    </span>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        step="1"
+                        min="1"
+                        value={priceDouble}
+                        onChange={(e) => setPriceDouble(e.target.value)}
+                        placeholder="135"
+                        required
+                        className="input-field py-2 text-sm text-center font-bold"
+                      />
+                      <span className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">ج</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="block text-[11px] font-bold text-gray-500 mb-1">
+                      سعر تريبل (Triple)
+                    </span>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        step="1"
+                        min="1"
+                        value={priceTriple}
+                        onChange={(e) => setPriceTriple(e.target.value)}
+                        placeholder="175"
+                        required
+                        className="input-field py-2 text-sm text-center font-bold"
+                      />
+                      <span className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">ج</span>
+                    </div>
                   </div>
                 </div>
-
-                {!isFriesCategory && (
-                  <>
-                    <div>
-                      <span className="block text-[11px] font-bold text-gray-500 mb-1">
-                        سعر دابل (Double)
-                      </span>
-                      <div className="relative">
-                        <input
-                          type="number"
-                          step="1"
-                          min="1"
-                          value={priceDouble}
-                          onChange={(e) => setPriceDouble(e.target.value)}
-                          placeholder="135"
-                          required
-                          className="input-field py-2 text-sm text-center font-bold"
-                        />
-                        <span className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">ج</span>
-                      </div>
-                    </div>
-
-                    <div>
-                      <span className="block text-[11px] font-bold text-gray-500 mb-1">
-                        سعر تريبل (Triple)
-                      </span>
-                      <div className="relative">
-                        <input
-                          type="number"
-                          step="1"
-                          min="1"
-                          value={priceTriple}
-                          onChange={(e) => setPriceTriple(e.target.value)}
-                          placeholder="175"
-                          required
-                          className="input-field py-2 text-sm text-center font-bold"
-                        />
-                        <span className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">ج</span>
-                      </div>
-                    </div>
-                  </>
-                )}
               </div>
-            </div>
+            )}
 
-            {/* Mandatory Image Upload (Supabase Storage) & Responsive Auto-Fit Preview */}
+                        {/* Mandatory Image Upload (Supabase Storage) & Responsive Auto-Fit Preview */}
             <div className="border border-gray-150 rounded-2xl p-4 bg-gray-50/60 space-y-3">
               <label className="block text-xs font-black text-gray-800">
                 صورة الصنف (رفع إلى Supabase Storage) <span className="text-red-500">*</span>

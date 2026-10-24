@@ -480,17 +480,25 @@ export function AdminMenuManagement({
                     {/* Prices tier */}
                     <div className="mt-3.5 pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
-                        <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-lg font-bold">
-                          سنجل: {item.price_single} ج
-                        </span>
-                        {item.price_double && (
-                          <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-lg font-bold">
-                            دابل: {item.price_double} ج
-                          </span>
-                        )}
-                        {item.price_triple && (
-                          <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-lg font-bold">
-                            تريبل: {item.price_triple} ج
+                        {item.price_double || item.price_triple ? (
+                          <>
+                            <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-lg font-bold">
+                              سنجل: {item.price_single} ج
+                            </span>
+                            {item.price_double && (
+                              <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-lg font-bold">
+                                دابل: {item.price_double} ج
+                              </span>
+                            )}
+                            {item.price_triple && (
+                              <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-lg font-bold">
+                                تريبل: {item.price_triple} ج
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <span className="bg-amber-50 text-amber-900 border border-amber-200 px-2.5 py-0.5 rounded-lg font-black">
+                            السعر: {item.price_single} ج
                           </span>
                         )}
                       </div>
@@ -717,7 +725,9 @@ export function AdminMenuManagement({
             },
             {
               label: 'الأسعار',
-              value: `سنجل: ${itemToDelete.price_single} ج | دابل: ${itemToDelete.price_double ?? '-'} ج | تريبل: ${itemToDelete.price_triple ?? '-'} ج`,
+              value: itemToDelete.price_double || itemToDelete.price_triple
+                ? `سنجل: ${itemToDelete.price_single} ج | دابل: ${itemToDelete.price_double ?? '-'} ج | تريبل: ${itemToDelete.price_triple ?? '-'} ج`
+                : `السعر: ${itemToDelete.price_single} ج (حجم موحد)`,
             },
             {
               label: 'الحالة الحالية',
