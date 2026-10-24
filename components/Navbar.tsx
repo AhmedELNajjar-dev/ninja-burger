@@ -51,7 +51,7 @@ export function Navbar({ profile }: NavbarProps = {}) {
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2 text-2xl font-black tracking-tight">
             <span>NINJA</span>
-            <span className="text-ninja-yellow">BURGER</span>
+            <span className="text-amber-200">BURGER</span>
             <span className="text-2xl">🥷</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-bold">
@@ -66,7 +66,7 @@ export function Navbar({ profile }: NavbarProps = {}) {
             {profile?.role === 'admin' && (
               <Link
                 href="/admin"
-                className="flex items-center gap-1 text-ninja-yellow hover:text-white transition-colors bg-white/10 px-2.5 py-1 rounded-lg"
+                className="flex items-center gap-1 text-amber-200 hover:text-white transition-colors bg-white/15 px-2.5 py-1 rounded-lg font-bold"
               >
                 <ShieldCheck size={16} />
                 {t.adminDashboard}
@@ -82,7 +82,7 @@ export function Navbar({ profile }: NavbarProps = {}) {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-white/15 hover:bg-white/25 active:scale-95 transition-all border border-white/20 text-white cursor-pointer shadow-sm"
             title={isArabic ? 'Switch language to English' : 'التحويل إلى اللغة العربية'}
           >
-            <Globe className="w-3.5 h-3.5 text-ninja-yellow" />
+            <Globe className="w-3.5 h-3.5 text-amber-200" />
             <span>{t.langButtonText}</span>
           </button>
 
@@ -166,7 +166,7 @@ export function Navbar({ profile }: NavbarProps = {}) {
                 <Link
                   href="/admin"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block text-base font-bold py-2 text-ninja-yellow border-b border-white/10"
+                  className="block text-base font-bold py-2 text-amber-200 border-b border-white/10"
                 >
                   🛡️ {t.adminDashboard}
                 </Link>
