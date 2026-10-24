@@ -52,6 +52,7 @@ export interface Addon {
   price: number
   sort_order?: number
   category?: string // optional grouping
+  is_available?: boolean
 }
 
 // ─── Cart Types ─────────────────────────────────────────────────────────────

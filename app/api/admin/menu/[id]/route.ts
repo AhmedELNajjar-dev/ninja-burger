@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAdmin } from '@/lib/adminAuth'
+import { revalidateTag, revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
 const menuItemUpdateSchema = z.object({
@@ -56,6 +57,11 @@ export async function PUT(
       return NextResponse.json({ error: `فشل تعديل الصنف: ${updateError.message}` }, { status: 500 })
     }
 
+    try {
+      revalidateTag('menu-catalog')
+      revalidatePath('/')
+    } catch {}
+
     return NextResponse.json({ item: updatedItem })
   } catch (err: any) {
     console.error('[Menu PUT Exception]', err)
@@ -80,6 +86,11 @@ export async function DELETE(
       console.error('[Menu DELETE Error]', deleteError)
       return NextResponse.json({ error: `فشل حذف الصنف: ${deleteError.message}` }, { status: 500 })
     }
+
+    try {
+      revalidateTag('menu-catalog')
+      revalidatePath('/')
+    } catch {}
 
     return NextResponse.json({ success: true })
   } catch (err: any) {

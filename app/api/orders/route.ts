@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
         .select('id, name_ar, name_en, price_single, price_double, price_triple, is_available')
         .in('id', menuIds),
       addonIds.length
-        ? adminClient.from('addons').select('id, name_ar, price').in('id', addonIds)
+        ? adminClient.from('addons').select('id, name_ar, price, is_available').in('id', addonIds)
         : Promise.resolve({ data: [] as any[], error: null }),
     ])
 
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
 
       for (const a of it.addons || []) {
         const addonRow = addonMap.get(a.id)
-        if (!addonRow) {
+        if (!addonRow || addonRow.is_available === false) {
           return NextResponse.json({ error: 'إضافة غير صحيحة أو غير متاحة' }, { status: 400 })
         }
         const addonPrice = Number(addonRow.price) || 0

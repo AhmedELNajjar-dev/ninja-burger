@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAdmin } from '@/lib/adminAuth'
+import { revalidateTag, revalidatePath } from 'next/cache'
 
 export async function PATCH(
   req: NextRequest,
@@ -25,6 +26,11 @@ export async function PATCH(
     if (updateError) {
       return NextResponse.json({ error: updateError.message }, { status: 500 })
     }
+
+    try {
+      revalidateTag('menu-catalog')
+      revalidatePath('/')
+    } catch {}
 
     return NextResponse.json({ success: true, item: updated })
   } catch (err: any) {

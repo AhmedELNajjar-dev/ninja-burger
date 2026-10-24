@@ -71,14 +71,26 @@ export function AddonsShowcase({ addons }: AddonsShowcaseProps) {
           const name = isArabic ? addon.name_ar : (addon.name_en || addon.name_ar)
           const secondaryName = isArabic ? addon.name_en : addon.name_ar
 
+          const isAvailable = addon.is_available !== false
           return (
             <motion.div
               key={addon.id}
-              whileHover={{ y: -2 }}
-              className="bg-white rounded-2xl p-4 border border-gray-150 shadow-card flex flex-col justify-between transition-all"
+              whileHover={{ y: isAvailable ? -2 : 0 }}
+              className={`bg-white rounded-2xl p-4 border shadow-card flex flex-col justify-between transition-all ${
+                isAvailable
+                  ? 'border-gray-150'
+                  : 'border-red-200 bg-red-50/20 opacity-70'
+              }`}
             >
               <div>
-                <span className="text-3xl block mb-2 select-none">{emoji}</span>
+                <div className="flex items-start justify-between gap-1 mb-2">
+                  <span className="text-3xl select-none">{emoji}</span>
+                  {!isAvailable && (
+                    <span className="text-[10px] text-red-600 font-bold bg-red-100 px-2 py-0.5 rounded-full">
+                      {isArabic ? 'غير متوفر' : 'Out of stock'}
+                    </span>
+                  )}
+                </div>
                 <h4 className="font-extrabold text-sm text-ninja-dark leading-snug">
                   {name}
                 </h4>

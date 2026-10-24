@@ -200,25 +200,36 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
               >
                 {addons.map((addon) => {
                   const isChecked = selectedAddons.has(addon.id);
+                  const isAvailable = addon.is_available !== false;
                   return (
                     <label
                       key={addon.id}
-                      onClick={() => toggleAddon(addon.id)}
+                      onClick={() => {
+                        if (isAvailable && item.is_available) {
+                          toggleAddon(addon.id);
+                        }
+                      }}
                       className={cn(
-                        'flex items-center justify-between p-1.5 rounded-xl cursor-pointer text-xs transition-colors',
-                        isChecked ? 'bg-red-50 text-ninja-red font-bold' : 'hover:bg-gray-100 text-gray-700'
+                        'flex items-center justify-between p-1.5 rounded-xl text-xs transition-colors',
+                        !isAvailable ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'cursor-pointer',
+                        isChecked ? 'bg-red-50 text-ninja-red font-bold' : isAvailable ? 'hover:bg-gray-100 text-gray-700' : 'text-gray-400'
                       )}
                     >
                       <div className="flex items-center gap-2">
                         <div
                           className={cn(
                             'w-4 h-4 rounded-md border flex items-center justify-center transition-colors',
-                            isChecked ? 'bg-ninja-red border-ninja-red text-white' : 'border-gray-300'
+                            !isAvailable ? 'border-gray-200 bg-gray-100' : isChecked ? 'bg-ninja-red border-ninja-red text-white' : 'border-gray-300'
                           )}
                         >
                           {isChecked && <Check size={12} strokeWidth={3} />}
                         </div>
                         <span>{isArabic ? addon.name_ar : (addon.name_en || addon.name_ar)}</span>
+                        {!isAvailable && (
+                          <span className="text-[10px] text-red-500 font-bold bg-red-100/80 px-1.5 py-0.2 rounded-md">
+                            {isArabic ? 'غير متوفر' : 'Out of stock'}
+                          </span>
+                        )}
                       </div>
                       <span className="text-gray-500 font-bold">+{addon.price} {t.currency}</span>
                     </label>

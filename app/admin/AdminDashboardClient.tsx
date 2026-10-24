@@ -22,12 +22,13 @@ import { NewOrderAlert } from '@/components/admin/NewOrderAlert'
 import { EditOrderModal } from '@/components/admin/EditOrderModal'
 import { DeleteConfirmModal } from '@/components/admin/DeleteConfirmModal'
 import { AdminMenuManagement } from '@/components/admin/AdminMenuManagement'
-import type { Order, OrderStatus, Profile, MenuItem, Category } from '@/types'
+import type { Order, OrderStatus, Profile, MenuItem, Category, Addon } from '@/types'
 
 interface Props {
   initialOrders: Order[]
   initialMenuItems: MenuItem[]
   categories: Category[]
+  initialAddons?: Addon[]
   adminProfile: Profile
 }
 
@@ -52,6 +53,7 @@ export default function AdminDashboardClient({
   initialOrders,
   initialMenuItems,
   categories,
+  initialAddons = [],
   adminProfile,
 }: Props) {
   const [activeTab, setActiveTab] = useState<'orders' | 'menu'>('orders')
@@ -433,6 +435,7 @@ export default function AdminDashboardClient({
           <AdminMenuManagement
             initialItems={initialMenuItems}
             categories={categories}
+            initialAddons={initialAddons}
           />
         )}
       </div>

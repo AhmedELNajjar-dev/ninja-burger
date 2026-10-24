@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import AdminDashboardClient from './AdminDashboardClient'
-import type { Order, Profile, MenuItem, Category } from '@/types'
+import type { Order, Profile, MenuItem, Category, Addon } from '@/types'
 
 export const metadata = { title: 'لوحة التحكم — نينجا برجر' }
 
@@ -26,7 +26,7 @@ export default async function AdminPage() {
   if (!profile || profile.role !== 'admin') redirect('/')
 
   // Fetch initial orders, menu items, and categories in parallel
-  const [{ data: orders }, { data: menuItems }, { data: categories }] =
+  const [{ data: orders }, { data: menuItems }, { data: categories }, { data: addons }] =
     await Promise.all([
       adminClient
         .from('orders')
@@ -38,6 +38,7 @@ export default async function AdminPage() {
         .select('*, category:categories(id, name_ar, name_en)')
         .order('sort_order', { ascending: true }),
       adminClient.from('categories').select('*').order('sort_order', { ascending: true }),
+      adminClient.from('addons').select('*').order('sort_order', { ascending: true }),
     ])
 
   // Count order frequency per phone number to identify first-time customers
@@ -56,6 +57,7 @@ export default async function AdminPage() {
       initialOrders={enrichedOrders as Order[]}
       initialMenuItems={(menuItems as MenuItem[]) || []}
       categories={(categories as Category[]) || []}
+      initialAddons={(addons as Addon[]) || []}
       adminProfile={profile as Profile}
     />
   )

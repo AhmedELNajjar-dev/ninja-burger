@@ -1,10 +1,13 @@
 -- 03_admin_menu_and_orders.sql
--- Enables bilingual description, admin CRUD permissions, orders edit/delete, and Supabase Storage bucket for menu images
+-- Enables bilingual description, admin CRUD permissions, orders edit/delete, addons availability/price editing, and Supabase Storage bucket for menu images
 
 -- 1. Add description_en to menu_items table
 ALTER TABLE public.menu_items ADD COLUMN IF NOT EXISTS description_en text;
 
--- 2. Helper function to check if current authenticated user is an admin
+-- 2. Add is_available to addons table
+ALTER TABLE public.addons ADD COLUMN IF NOT EXISTS is_available boolean NOT NULL DEFAULT true;
+
+-- 3. Helper function to check if current authenticated user is an admin
 CREATE OR REPLACE FUNCTION public.is_admin()
 RETURNS boolean AS $$
   SELECT EXISTS (
@@ -13,7 +16,7 @@ RETURNS boolean AS $$
   );
 $$ LANGUAGE sql SECURITY DEFINER;
 
--- 3. Menu items: Public read, Admin full CRUD
+-- 4. Menu items: Public read, Admin full CRUD
 DROP POLICY IF EXISTS "Public can read menu" ON public.menu_items;
 CREATE POLICY "Public can read menu" ON public.menu_items
   FOR SELECT USING (true);
@@ -24,7 +27,18 @@ CREATE POLICY "Admin can manage menu" ON public.menu_items
   USING (public.is_admin())
   WITH CHECK (public.is_admin());
 
--- 4. Orders: Admin can update and delete
+-- 5. Addons: Public read, Admin full CRUD
+DROP POLICY IF EXISTS "Public can read addons" ON public.addons;
+CREATE POLICY "Public can read addons" ON public.addons
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Admin can manage addons" ON public.addons;
+CREATE POLICY "Admin can manage addons" ON public.addons
+  FOR ALL TO authenticated
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
+
+-- 6. Orders: Admin can update and delete
 DROP POLICY IF EXISTS "Admin can update orders" ON public.orders;
 CREATE POLICY "Admin can update orders" ON public.orders
   FOR UPDATE TO authenticated
@@ -36,7 +50,7 @@ CREATE POLICY "Admin can delete orders" ON public.orders
   FOR DELETE TO authenticated
   USING (public.is_admin());
 
--- 5. Supabase Storage bucket for menu items
+-- 7. Supabase Storage bucket for menu items
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('menu-items', 'menu-items', true)
 ON CONFLICT (id) DO UPDATE SET public = true;

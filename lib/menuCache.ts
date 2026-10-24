@@ -29,7 +29,6 @@ export const getCachedMenuData = unstable_cache(
         adminClient
           .from('menu_items')
           .select('*, category:categories(id, name_ar, name_en, sort_order)')
-          .eq('is_available', true)
           .order('sort_order', { ascending: true }),
         adminClient
           .from('addons')

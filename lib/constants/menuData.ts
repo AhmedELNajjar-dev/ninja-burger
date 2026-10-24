@@ -8,18 +8,18 @@ export const DEFAULT_CATEGORIES: Category[] = [
 ]
 
 export const DEFAULT_ADDONS: Addon[] = [
-  { id: 'addon-1', name_ar: 'إضافة بيكون', name_en: 'Bacon Add-on', price: 20, sort_order: 1 },
-  { id: 'addon-2', name_ar: 'إضافة موتزاريلا', name_en: 'Mozzarella Add-on', price: 15, sort_order: 2 },
-  { id: 'addon-3', name_ar: 'إضافة مشروم', name_en: 'Mushroom Add-on', price: 15, sort_order: 3 },
-  { id: 'addon-4', name_ar: 'إضافة تركي', name_en: 'Turkey Add-on', price: 15, sort_order: 4 },
-  { id: 'addon-5', name_ar: 'إضافة بيبروني', name_en: 'Pepperoni Add-on', price: 15, sort_order: 5 },
-  { id: 'addon-6', name_ar: 'شريحة جبن', name_en: 'Cheese Slice', price: 15, sort_order: 6 },
-  { id: 'addon-7', name_ar: 'باكيت فرايز', name_en: 'Fries Packet', price: 30, sort_order: 7 },
-  { id: 'addon-8', name_ar: 'كاب صوص', name_en: 'Sauce Cup', price: 15, sort_order: 8 },
-  { id: 'addon-9', name_ar: 'مياه معدنية', name_en: 'Mineral Water', price: 15, sort_order: 9 },
-  { id: 'addon-10', name_ar: 'مياه غازية', name_en: 'Sparkling Water', price: 20, sort_order: 10 },
-  { id: 'addon-11', name_ar: 'كرمليز أوبيون', name_en: 'Caramelized Onion', price: 10, sort_order: 11 },
-  { id: 'addon-12', name_ar: 'إضافة هاليبنو', name_en: 'Jalapeño Add-on', price: 5, sort_order: 12 },
+  { id: 'addon-1', name_ar: 'إضافة بيكون', name_en: 'Bacon Add-on', price: 20, is_available: true, sort_order: 1 },
+  { id: 'addon-2', name_ar: 'إضافة موتزاريلا', name_en: 'Mozzarella Add-on', price: 15, is_available: true, sort_order: 2 },
+  { id: 'addon-3', name_ar: 'إضافة مشروم', name_en: 'Mushroom Add-on', price: 15, is_available: true, sort_order: 3 },
+  { id: 'addon-4', name_ar: 'إضافة تركي', name_en: 'Turkey Add-on', price: 15, is_available: true, sort_order: 4 },
+  { id: 'addon-5', name_ar: 'إضافة بيبروني', name_en: 'Pepperoni Add-on', price: 15, is_available: true, sort_order: 5 },
+  { id: 'addon-6', name_ar: 'شريحة جبن', name_en: 'Cheese Slice', price: 15, is_available: true, sort_order: 6 },
+  { id: 'addon-7', name_ar: 'باكيت فرايز', name_en: 'Fries Packet', price: 30, is_available: true, sort_order: 7 },
+  { id: 'addon-8', name_ar: 'كاب صوص', name_en: 'Sauce Cup', price: 15, is_available: true, sort_order: 8 },
+  { id: 'addon-9', name_ar: 'مياه معدنية', name_en: 'Mineral Water', price: 15, is_available: true, sort_order: 9 },
+  { id: 'addon-10', name_ar: 'مياه غازية', name_en: 'Sparkling Water', price: 20, is_available: true, sort_order: 10 },
+  { id: 'addon-11', name_ar: 'كرمليز أوبيون', name_en: 'Caramelized Onion', price: 10, is_available: true, sort_order: 11 },
+  { id: 'addon-12', name_ar: 'إضافة هاليبنو', name_en: 'Jalapeño Add-on', price: 5, is_available: true, sort_order: 12 },
 ]
 
 export const DEFAULT_MENU_ITEMS: MenuItem[] = [

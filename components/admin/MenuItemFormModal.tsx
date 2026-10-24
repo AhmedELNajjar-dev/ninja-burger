@@ -4,6 +4,7 @@ import React, { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Upload, Check, Image as ImageIcon, AlertCircle, Save, Plus } from 'lucide-react'
 import { MenuItem, Category } from '@/types'
+import { getLocalizedDescription } from '@/lib/menuTranslations'
 import { DiffConfirmModal, ChangeDiff } from './DiffConfirmModal'
 
 interface MenuItemFormModalProps {
@@ -29,7 +30,11 @@ export function MenuItemFormModal({
   const [nameAr, setNameAr] = useState(item?.name_ar || '')
   const [nameEn, setNameEn] = useState(item?.name_en || '')
   const [descriptionAr, setDescriptionAr] = useState(item?.description_ar || '')
-  const [descriptionEn, setDescriptionEn] = useState(item?.description_en || '')
+  const initialDescEn =
+    item?.description_en ||
+    getLocalizedDescription(item?.name_en, item?.name_ar, item?.description_ar, false) ||
+    ''
+  const [descriptionEn, setDescriptionEn] = useState(initialDescEn)
   const [categoryId, setCategoryId] = useState(item?.category_id || (categories[0]?.id || ''))
   const [priceSingle, setPriceSingle] = useState(item?.price_single?.toString() || '')
   const [priceDouble, setPriceDouble] = useState(item?.price_double?.toString() || '')
@@ -331,9 +336,22 @@ export function MenuItemFormModal({
               </div>
 
               <div>
-                <label className="block text-xs font-black text-gray-800 mb-1.5 text-left" dir="ltr">
-                  Ingredients Description (English) <span className="text-red-500">*</span>
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-black text-gray-800 text-left" dir="ltr">
+                    Ingredients (English) <span className="text-red-500">*</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const generated = getLocalizedDescription(nameEn, nameAr, descriptionAr, false)
+                      if (generated) setDescriptionEn(generated)
+                    }}
+                    className="text-[11px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 cursor-pointer"
+                    title="توليد الترجمة الإنجليزية تلقائياً بناءً على المكونات والاسم"
+                  >
+                    <span>✨ ترجمة إنجليزية تلقائية</span>
+                  </button>
+                </div>
                 <textarea
                   value={descriptionEn}
                   onChange={(e) => setDescriptionEn(e.target.value)}
