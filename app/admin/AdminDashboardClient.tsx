@@ -105,7 +105,18 @@ export default function AdminDashboardClient({
         (payload) => {
           const updated = payload.new as Order
           setOrders((prev) =>
-            prev.map((o) => (o.id === updated.id ? updated : o))
+            prev.map((o) =>
+              o.id === updated.id
+                ? {
+                    ...o,
+                    ...updated,
+                    is_first_order:
+                      updated.is_first_order !== undefined
+                        ? updated.is_first_order
+                        : o.is_first_order,
+                  }
+                : o
+            )
           )
         }
       )
@@ -136,7 +147,19 @@ export default function AdminDashboardClient({
       .select('*')
       .order('created_at', { ascending: false })
       .limit(100)
-    if (data) setOrders(data as Order[])
+    if (data) {
+      const phoneCounts: Record<string, number> = {}
+      data.forEach((o: any) => {
+        if (o.customer_phone) {
+          phoneCounts[o.customer_phone] = (phoneCounts[o.customer_phone] ?? 0) + 1
+        }
+      })
+      const ordersWithFlags: Order[] = data.map((o: any) => ({
+        ...o,
+        is_first_order: (phoneCounts[o.customer_phone] ?? 1) === 1,
+      }))
+      setOrders(ordersWithFlags)
+    }
     setIsRefreshing(false)
   }, [supabase])
 
@@ -160,7 +183,11 @@ export default function AdminDashboardClient({
           .eq('id', id)
           .single()
         if (data) {
-          setOrders((prev) => prev.map((o) => (o.id === id ? (data as Order) : o)))
+          setOrders((prev) =>
+            prev.map((o) =>
+              o.id === id ? { ...o, ...(data as Order), is_first_order: o.is_first_order } : o
+            )
+          )
         }
       }
     } catch {
@@ -170,7 +197,20 @@ export default function AdminDashboardClient({
 
   // ── Handle Order Update from Edit Modal ───────────────────────
   const handleOrderUpdated = (updated: Order) => {
-    setOrders((prev) => prev.map((o) => (o.id === updated.id ? updated : o)))
+    setOrders((prev) =>
+      prev.map((o) =>
+        o.id === updated.id
+          ? {
+              ...o,
+              ...updated,
+              is_first_order:
+                updated.is_first_order !== undefined
+                  ? updated.is_first_order
+                  : o.is_first_order,
+            }
+          : o
+      )
+    )
   }
 
   // ── Handle Order Delete Execution ─────────────────────────────

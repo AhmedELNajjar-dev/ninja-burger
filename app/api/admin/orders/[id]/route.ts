@@ -103,10 +103,26 @@ export async function PATCH(
       return NextResponse.json({ error: updateErr.message }, { status: 500 })
     }
 
-    // 4. Send Discord Edit Notification (awaited for reliability in serverless)
-    await sendOrderEditNotification(updatedOrder, changes)
+    // 4. Accurately compute is_first_order so editing never falsely turns a new client into a repeat client
+    let isFirstTimeCustomer = true
+    const phone = updatedOrder.customer_phone
+    if (phone) {
+      const { count } = await adminClient
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('customer_phone', phone)
+      isFirstTimeCustomer = (count ?? 1) <= 1
+    }
 
-    return NextResponse.json({ success: true, order: updatedOrder, changes })
+    const orderWithFlag = {
+      ...updatedOrder,
+      is_first_order: isFirstTimeCustomer,
+    }
+
+    // 5. Send Discord Edit Notification (awaited for reliability in serverless)
+    await sendOrderEditNotification(orderWithFlag, changes)
+
+    return NextResponse.json({ success: true, order: orderWithFlag, changes })
   } catch (err: any) {
     console.error('[Order PATCH Exception]', err)
     return NextResponse.json({ error: 'حدث خطأ أثناء تعديل الطلب' }, { status: 500 })
