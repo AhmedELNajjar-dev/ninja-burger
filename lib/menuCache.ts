@@ -1,6 +1,6 @@
 import { unstable_cache } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/server'
-import { DEFAULT_CATEGORIES, DEFAULT_MENU_ITEMS, DEFAULT_ADDONS } from '@/lib/constants/menuData'
+import { DEFAULT_CATEGORIES, DEFAULT_MENU_ITEMS, DEFAULT_ADDONS, DEFAULT_SAUCE_OPTIONS, DEFAULT_DRINK_OPTIONS, isSandwichTopping } from '@/lib/constants/menuData'
 import type { Category, MenuItem, Addon } from '@/types'
 
 /**
@@ -40,8 +40,30 @@ export const getCachedMenuData = unstable_cache(
         categories && categories.length > 0 ? categories : DEFAULT_CATEGORIES
       const safeItems: MenuItem[] =
         menuItems && menuItems.length > 0 ? menuItems : DEFAULT_MENU_ITEMS
-      const safeAddons: Addon[] =
+      const rawAddons: Addon[] =
         addons && addons.length > 0 ? addons : DEFAULT_ADDONS
+
+      const safeAddons: Addon[] = rawAddons.map((addon) => {
+        let options = addon.options
+        const lowerEn = (addon.name_en || '').toLowerCase()
+        const nameAr = addon.name_ar || ''
+
+        if ((!options || options.length === 0)) {
+          if (addon.id === 'addon-8' || lowerEn.includes('sauce') || nameAr.includes('صوص')) {
+            options = DEFAULT_SAUCE_OPTIONS
+          } else if (addon.id === 'addon-10' || lowerEn.includes('drink') || lowerEn.includes('sparkling') || nameAr.includes('غازية')) {
+            options = DEFAULT_DRINK_OPTIONS
+          }
+        }
+
+        const is_topping = addon.is_topping !== undefined ? addon.is_topping : isSandwichTopping(addon)
+
+        return {
+          ...addon,
+          options: options || [],
+          is_topping,
+        }
+      })
 
       return {
         categories: safeCategories,

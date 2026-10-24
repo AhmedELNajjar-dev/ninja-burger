@@ -149,7 +149,7 @@ export default function HomeClient({
       />
       <div className="mt-6">
         {isAddonCategory && filteredItems.length === 0 ? (
-          <AddonsShowcase addons={addons} />
+          <AddonsShowcase addons={addons} isLoggedIn={isLoggedIn} />
         ) : (
           <MenuGrid items={filteredItems} addons={addons} isLoggedIn={isLoggedIn} />
         )}

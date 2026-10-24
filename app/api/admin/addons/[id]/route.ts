@@ -8,6 +8,17 @@ const updateAddonSchema = z.object({
   is_available: z.boolean().optional(),
   name_ar: z.string().min(2, 'الاسم بالعربية مطلوب').optional(),
   name_en: z.string().min(2, 'الاسم بالإنجليزية مطلوب').optional(),
+  is_topping: z.boolean().optional(),
+  options: z
+    .array(
+      z.object({
+        id: z.string(),
+        name_ar: z.string().min(1, 'اسم الخيار بالعربية مطلوب'),
+        name_en: z.string().min(1, 'اسم الخيار بالإنجليزية مطلوب'),
+        is_available: z.boolean().default(true),
+      })
+    )
+    .optional(),
 })
 
 export async function PATCH(
@@ -31,6 +42,8 @@ export async function PATCH(
     if (parsed.data.is_available !== undefined) updatePayload.is_available = parsed.data.is_available
     if (parsed.data.name_ar !== undefined) updatePayload.name_ar = parsed.data.name_ar
     if (parsed.data.name_en !== undefined) updatePayload.name_en = parsed.data.name_en
+    if (parsed.data.is_topping !== undefined) updatePayload.is_topping = parsed.data.is_topping
+    if (parsed.data.options !== undefined) updatePayload.options = parsed.data.options
 
     const { data: updatedAddon, error: updateError } = await adminClient
       .from('addons')

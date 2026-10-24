@@ -30,12 +30,16 @@ export function MenuItemFormModal({
   const [nameAr, setNameAr] = useState(item?.name_ar || '')
   const [nameEn, setNameEn] = useState(item?.name_en || '')
   const [descriptionAr, setDescriptionAr] = useState(item?.description_ar || '')
-  const initialDescEn =
-    item?.description_en ||
-    getLocalizedDescription(item?.name_en, item?.name_ar, item?.description_ar, false) ||
-    ''
+  const initialDescEn = item?.description_en || ''
   const [descriptionEn, setDescriptionEn] = useState(initialDescEn)
   const [categoryId, setCategoryId] = useState(item?.category_id || (categories[0]?.id || ''))
+
+  const selectedCategory = categories.find((c) => c.id === categoryId)
+  const isFriesCategory =
+    selectedCategory?.id === 'cat-fries' ||
+    selectedCategory?.name_en?.toLowerCase().includes('fries') ||
+    selectedCategory?.name_ar?.includes('فرايز') ||
+    selectedCategory?.name_ar?.includes('بطاطس')
   const [priceSingle, setPriceSingle] = useState(item?.price_single?.toString() || '')
   const [priceDouble, setPriceDouble] = useState(item?.price_double?.toString() || '')
   const [priceTriple, setPriceTriple] = useState(item?.price_triple?.toString() || '')
@@ -123,20 +127,22 @@ export function MenuItemFormModal({
     }
 
     const pSingle = Number(priceSingle)
-    const pDouble = Number(priceDouble)
-    const pTriple = Number(priceTriple)
+    const pDouble = priceDouble ? Number(priceDouble) : null
+    const pTriple = priceTriple ? Number(priceTriple) : null
 
     if (isNaN(pSingle) || pSingle <= 0) {
-      setFormError('سعر السنجل مطلوب وإلزامي وأكبر من صفر')
+      setFormError('سعر الصنف (سنجل) مطلوب وإلزامي وأكبر من صفر')
       return
     }
-    if (isNaN(pDouble) || pDouble <= 0) {
-      setFormError('سعر الدابل مطلوب وإلزامي وأكبر من صفر')
-      return
-    }
-    if (isNaN(pTriple) || pTriple <= 0) {
-      setFormError('سعر التريبل مطلوب وإلزامي وأكبر من صفر')
-      return
+    if (!isFriesCategory) {
+      if (!pDouble || isNaN(pDouble) || pDouble <= 0) {
+        setFormError('سعر الدابل مطلوب وإلزامي لسندوتشات البرجر وأكبر من صفر')
+        return
+      }
+      if (!pTriple || isNaN(pTriple) || pTriple <= 0) {
+        setFormError('سعر التريبل مطلوب وإلزامي لسندوتشات البرجر وأكبر من صفر')
+        return
+      }
     }
     if (!imageUrl.trim()) {
       setFormError('يرجى رفع صورة الصنف (الصورة إلزامية)')
@@ -164,14 +170,20 @@ export function MenuItemFormModal({
         const newCat = categories.find((c) => c.id === categoryId)?.name_ar || categoryId
         diffs.push({ field: 'القسم', oldVal: oldCat, newVal: newCat })
       }
-      if (pSingle !== item.price_single) {
-        diffs.push({ field: 'سعر السنجل', oldVal: `${item.price_single} ج`, newVal: `${pSingle} ج` })
-      }
-      if (pDouble !== (item.price_double ?? null)) {
-        diffs.push({ field: 'سعر الدابل', oldVal: `${item.price_double ?? '-'} ج`, newVal: `${pDouble} ج` })
-      }
-      if (pTriple !== (item.price_triple ?? null)) {
-        diffs.push({ field: 'سعر التريبل', oldVal: `${item.price_triple ?? '-'} ج`, newVal: `${pTriple} ج` })
+      if (isFriesCategory) {
+        if (pSingle !== item.price_single) {
+          diffs.push({ field: 'سعر الفرايز', oldVal: `${item.price_single} ج`, newVal: `${pSingle} ج` })
+        }
+      } else {
+        if (pSingle !== item.price_single) {
+          diffs.push({ field: 'سعر السنجل', oldVal: `${item.price_single} ج`, newVal: `${pSingle} ج` })
+        }
+        if (pDouble !== (item.price_double ?? null)) {
+          diffs.push({ field: 'سعر الدابل', oldVal: `${item.price_double ?? '-'} ج`, newVal: `${pDouble ?? '-'} ج` })
+        }
+        if (pTriple !== (item.price_triple ?? null)) {
+          diffs.push({ field: 'سعر التريبل', oldVal: `${item.price_triple ?? '-'} ج`, newVal: `${pTriple ?? '-'} ج` })
+        }
       }
       if (imageUrl !== item.image_url) {
         diffs.push({ field: 'صورة الصنف', oldVal: '(صورة سابقة)', newVal: '(صورة جديدة تم رفعها)' })
@@ -192,7 +204,11 @@ export function MenuItemFormModal({
       // Create mode summary
       diffs.push({ field: 'الاسم بالعربية', oldVal: '(صنف جديد)', newVal: nameAr.trim() })
       diffs.push({ field: 'الاسم بالإنجليزية', oldVal: '-', newVal: nameEn.trim() })
-      diffs.push({ field: 'الأسعار', oldVal: '-', newVal: `سنجل: ${pSingle} ج | دابل: ${pDouble} ج | تريبل: ${pTriple} ج` })
+      if (isFriesCategory) {
+        diffs.push({ field: 'سعر الفرايز', oldVal: '-', newVal: `${pSingle} ج (حجم موحد)` })
+      } else {
+        diffs.push({ field: 'الأسعار', oldVal: '-', newVal: `سنجل: ${pSingle} ج | دابل: ${pDouble ?? '-'} ج | تريبل: ${pTriple ?? '-'} ج` })
+      }
       diffs.push({ field: 'حالة التوفر', oldVal: '-', newVal: isAvailable ? 'متوفر للطلب' : 'غير متوفر' })
     }
 
@@ -210,8 +226,8 @@ export function MenuItemFormModal({
       description_en: descriptionEn.trim(),
       category_id: categoryId,
       price_single: Number(priceSingle),
-      price_double: Number(priceDouble),
-      price_triple: Number(priceTriple),
+      price_double: !isFriesCategory && priceDouble ? Number(priceDouble) : null,
+      price_triple: !isFriesCategory && priceTriple ? Number(priceTriple) : null,
       image_url: imageUrl.trim(),
       is_available: isAvailable,
       sort_order: sortOrder,
@@ -336,22 +352,9 @@ export function MenuItemFormModal({
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-black text-gray-800 text-left" dir="ltr">
-                    Ingredients (English) <span className="text-red-500">*</span>
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const generated = getLocalizedDescription(nameEn, nameAr, descriptionAr, false)
-                      if (generated) setDescriptionEn(generated)
-                    }}
-                    className="text-[11px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 cursor-pointer"
-                    title="توليد الترجمة الإنجليزية تلقائياً بناءً على المكونات والاسم"
-                  >
-                    <span>✨ ترجمة إنجليزية تلقائية</span>
-                  </button>
-                </div>
+                <label className="block text-xs font-black text-gray-800 mb-1.5 text-left" dir="ltr">
+                  Ingredients (English) <span className="text-red-500">*</span>
+                </label>
                 <textarea
                   value={descriptionEn}
                   onChange={(e) => setDescriptionEn(e.target.value)}
@@ -405,15 +408,26 @@ export function MenuItemFormModal({
               </div>
             </div>
 
-            {/* Mandatory Pricing Tiers (Single, Double, Triple) */}
+            {/* Pricing Tiers (Single, Double, Triple - Optional for Fries) */}
             <div className="border border-gray-150 rounded-2xl p-4 bg-gray-50/60">
               <label className="block text-xs font-black text-gray-800 mb-2">
-                أسعار الأحجام الثلاثة (جميعها إجبارية بالجنيه المصري) <span className="text-red-500">*</span>
+                {isFriesCategory ? (
+                  <>
+                    سعر الفرايز (بالجنيه المصري) <span className="text-red-500">*</span>
+                    <span className="block text-[11px] font-medium text-emerald-600 mt-0.5">
+                      💡 قسم الفرايز له حجم وسعر موحد، ولا يتطلب أسعار دابل أو تريبل.
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    أسعار الأحجام الثلاثة (جميعها إجبارية لسندوتشات البرجر بالجنيه المصري) <span className="text-red-500">*</span>
+                  </>
+                )}
               </label>
-              <div className="grid grid-cols-3 gap-3">
+              <div className={isFriesCategory ? 'grid grid-cols-1 max-w-xs' : 'grid grid-cols-3 gap-3'}>
                 <div>
                   <span className="block text-[11px] font-bold text-gray-500 mb-1">
-                    سعر سنجل (Single)
+                    {isFriesCategory ? 'سعر الصنف (Price)' : 'سعر سنجل (Single)'}
                   </span>
                   <div className="relative">
                     <input
@@ -422,7 +436,7 @@ export function MenuItemFormModal({
                       min="1"
                       value={priceSingle}
                       onChange={(e) => setPriceSingle(e.target.value)}
-                      placeholder="105"
+                      placeholder={isFriesCategory ? '70' : '105'}
                       required
                       className="input-field py-2 text-sm text-center font-bold"
                     />
@@ -430,43 +444,47 @@ export function MenuItemFormModal({
                   </div>
                 </div>
 
-                <div>
-                  <span className="block text-[11px] font-bold text-gray-500 mb-1">
-                    سعر دابل (Double)
-                  </span>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      step="1"
-                      min="1"
-                      value={priceDouble}
-                      onChange={(e) => setPriceDouble(e.target.value)}
-                      placeholder="135"
-                      required
-                      className="input-field py-2 text-sm text-center font-bold"
-                    />
-                    <span className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">ج</span>
-                  </div>
-                </div>
+                {!isFriesCategory && (
+                  <>
+                    <div>
+                      <span className="block text-[11px] font-bold text-gray-500 mb-1">
+                        سعر دابل (Double)
+                      </span>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          step="1"
+                          min="1"
+                          value={priceDouble}
+                          onChange={(e) => setPriceDouble(e.target.value)}
+                          placeholder="135"
+                          required
+                          className="input-field py-2 text-sm text-center font-bold"
+                        />
+                        <span className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">ج</span>
+                      </div>
+                    </div>
 
-                <div>
-                  <span className="block text-[11px] font-bold text-gray-500 mb-1">
-                    سعر تريبل (Triple)
-                  </span>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      step="1"
-                      min="1"
-                      value={priceTriple}
-                      onChange={(e) => setPriceTriple(e.target.value)}
-                      placeholder="175"
-                      required
-                      className="input-field py-2 text-sm text-center font-bold"
-                    />
-                    <span className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">ج</span>
-                  </div>
-                </div>
+                    <div>
+                      <span className="block text-[11px] font-bold text-gray-500 mb-1">
+                        سعر تريبل (Triple)
+                      </span>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          step="1"
+                          min="1"
+                          value={priceTriple}
+                          onChange={(e) => setPriceTriple(e.target.value)}
+                          placeholder="175"
+                          required
+                          className="input-field py-2 text-sm text-center font-bold"
+                        />
+                        <span className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">ج</span>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 

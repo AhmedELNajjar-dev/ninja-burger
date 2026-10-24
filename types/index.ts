@@ -44,7 +44,15 @@ export interface MenuItem {
   created_at?: string
 }
 
-// Addon / modifier available for any menu item
+// Addon flavor / variant option (e.g. sauce flavor, drink flavor)
+export interface AddonOption {
+  id: string
+  name_ar: string
+  name_en: string
+  is_available: boolean
+}
+
+// Addon / modifier available for menu items or standalone ordering
 export interface Addon {
   id: string
   name_ar: string
@@ -53,6 +61,8 @@ export interface Addon {
   sort_order?: number
   category?: string // optional grouping
   is_available?: boolean
+  is_topping?: boolean // true if sandwich/fries topping, false if standalone side/drink
+  options?: AddonOption[] // flavor / type options (e.g. sauce flavors, soft drink flavors)
 }
 
 // ─── Cart Types ─────────────────────────────────────────────────────────────

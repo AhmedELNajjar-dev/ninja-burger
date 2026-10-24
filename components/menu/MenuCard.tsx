@@ -10,6 +10,7 @@ import { cn } from '../ui/cn';
 import { Button } from '../ui/Button';
 import { useTranslation } from '@/lib/useTranslation';
 import { getLocalizedDescription } from '@/lib/menuTranslations';
+import { isSandwichTopping } from '@/lib/constants/menuData';
 
 interface MenuCardProps {
   item: MenuItem;
@@ -38,8 +39,11 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
     ? selectedSize
     : (sizes[0]?.size ?? 'single');
 
+  // Only show toppings (exclude standalone sides & drinks like soft drinks, fries packet, sauce cup, water)
+  const toppings = addons.filter(isSandwichTopping);
+
   const currentPrice = sizes.find(s => s.size === effectiveSize)?.price || item.price_single;
-  const addonsTotal = addons
+  const addonsTotal = toppings
     .filter(a => selectedAddons.has(a.id))
     .reduce((sum, a) => sum + a.price, 0);
   const totalPrice = currentPrice + addonsTotal;
@@ -57,7 +61,7 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
       return;
     }
 
-    const chosenAddons = addons
+    const chosenAddons = toppings
       .filter(a => selectedAddons.has(a.id))
       .map(a => ({ id: a.id, name_ar: a.name_ar, price: a.price }));
 
@@ -166,7 +170,7 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
         )}
 
         {/* Collapsible Add-ons section */}
-        {addons.length > 0 && (
+        {toppings.length > 0 && (
           <div className="border border-gray-150 rounded-2xl overflow-hidden bg-gray-50/50">
             <button
               type="button"
@@ -198,7 +202,7 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
                 exit={{ opacity: 0, height: 0 }}
                 className="px-3 pb-3 pt-1 border-t border-gray-150 max-h-48 overflow-y-auto scrollbar-ninja space-y-1.5"
               >
-                {addons.map((addon) => {
+                {toppings.map((addon) => {
                   const isChecked = selectedAddons.has(addon.id);
                   const isAvailable = addon.is_available !== false;
                   return (

@@ -7,20 +7,93 @@ export const DEFAULT_CATEGORIES: Category[] = [
   { id: 'cat-mix', name_ar: 'الميكس الكبير', name_en: 'The Big Mix', sort_order: 4 },
 ]
 
-export const DEFAULT_ADDONS: Addon[] = [
-  { id: 'addon-1', name_ar: 'إضافة بيكون', name_en: 'Bacon Add-on', price: 20, is_available: true, sort_order: 1 },
-  { id: 'addon-2', name_ar: 'إضافة موتزاريلا', name_en: 'Mozzarella Add-on', price: 15, is_available: true, sort_order: 2 },
-  { id: 'addon-3', name_ar: 'إضافة مشروم', name_en: 'Mushroom Add-on', price: 15, is_available: true, sort_order: 3 },
-  { id: 'addon-4', name_ar: 'إضافة تركي', name_en: 'Turkey Add-on', price: 15, is_available: true, sort_order: 4 },
-  { id: 'addon-5', name_ar: 'إضافة بيبروني', name_en: 'Pepperoni Add-on', price: 15, is_available: true, sort_order: 5 },
-  { id: 'addon-6', name_ar: 'شريحة جبن', name_en: 'Cheese Slice', price: 15, is_available: true, sort_order: 6 },
-  { id: 'addon-7', name_ar: 'باكيت فرايز', name_en: 'Fries Packet', price: 30, is_available: true, sort_order: 7 },
-  { id: 'addon-8', name_ar: 'كاب صوص', name_en: 'Sauce Cup', price: 15, is_available: true, sort_order: 8 },
-  { id: 'addon-9', name_ar: 'مياه معدنية', name_en: 'Mineral Water', price: 15, is_available: true, sort_order: 9 },
-  { id: 'addon-10', name_ar: 'مياه غازية', name_en: 'Sparkling Water', price: 20, is_available: true, sort_order: 10 },
-  { id: 'addon-11', name_ar: 'كرمليز أوبيون', name_en: 'Caramelized Onion', price: 10, is_available: true, sort_order: 11 },
-  { id: 'addon-12', name_ar: 'إضافة هاليبنو', name_en: 'Jalapeño Add-on', price: 5, is_available: true, sort_order: 12 },
+export const DEFAULT_SAUCE_OPTIONS = [
+  { id: 'sauce-cheddar', name_ar: 'صوص شيدر', name_en: 'Cheddar Sauce', is_available: true },
+  { id: 'sauce-tasty', name_ar: 'صوص بيج تايستي', name_en: 'Big Tasty Sauce', is_available: true },
+  { id: 'sauce-bbq', name_ar: 'صوص باربيكيو', name_en: 'BBQ Sauce', is_available: true },
+  { id: 'sauce-ranch', name_ar: 'صوص رانش', name_en: 'Ranch Sauce', is_available: true },
+  { id: 'sauce-samourai', name_ar: 'صوص ساموراي حار', name_en: 'Spicy Samourai Sauce', is_available: true },
+  { id: 'sauce-thousand', name_ar: 'صوص تاوزند آيلاند', name_en: 'Thousand Island Sauce', is_available: true },
 ]
+
+export const DEFAULT_DRINK_OPTIONS = [
+  { id: 'drink-pepsi', name_ar: 'بيبسي', name_en: 'Pepsi', is_available: true },
+  { id: 'drink-coca', name_ar: 'كوكاكولا', name_en: 'Coca-Cola', is_available: true },
+  { id: 'drink-7up', name_ar: 'سفن آب', name_en: '7Up', is_available: true },
+  { id: 'drink-sprite', name_ar: 'سبرايت', name_en: 'Sprite', is_available: true },
+  { id: 'drink-fanta', name_ar: 'فانتا برتقال', name_en: 'Fanta Orange', is_available: true },
+  { id: 'drink-diet-pepsi', name_ar: 'دايت بيبسي', name_en: 'Diet Pepsi', is_available: true },
+]
+
+export const DEFAULT_ADDONS: Addon[] = [
+  { id: 'addon-1', name_ar: 'إضافة بيكون', name_en: 'Bacon Add-on', price: 20, is_available: true, sort_order: 1, is_topping: true },
+  { id: 'addon-2', name_ar: 'إضافة موتزاريلا', name_en: 'Mozzarella Add-on', price: 15, is_available: true, sort_order: 2, is_topping: true },
+  { id: 'addon-3', name_ar: 'إضافة مشروم', name_en: 'Mushroom Add-on', price: 15, is_available: true, sort_order: 3, is_topping: true },
+  { id: 'addon-4', name_ar: 'إضافة تركي', name_en: 'Turkey Add-on', price: 15, is_available: true, sort_order: 4, is_topping: true },
+  { id: 'addon-5', name_ar: 'إضافة بيبروني', name_en: 'Pepperoni Add-on', price: 15, is_available: true, sort_order: 5, is_topping: true },
+  { id: 'addon-6', name_ar: 'شريحة جبن', name_en: 'Cheese Slice', price: 15, is_available: true, sort_order: 6, is_topping: true },
+  { id: 'addon-7', name_ar: 'باكيت فرايز', name_en: 'Fries Packet', price: 30, is_available: true, sort_order: 7, is_topping: false },
+  {
+    id: 'addon-8',
+    name_ar: 'كاب صوص',
+    name_en: 'Sauce Cup',
+    price: 15,
+    is_available: true,
+    sort_order: 8,
+    is_topping: false,
+    options: DEFAULT_SAUCE_OPTIONS,
+  },
+  { id: 'addon-9', name_ar: 'مياه معدنية', name_en: 'Mineral Water', price: 15, is_available: true, sort_order: 9, is_topping: false },
+  {
+    id: 'addon-10',
+    name_ar: 'مياه غازية',
+    name_en: 'Soft Drinks',
+    price: 20,
+    is_available: true,
+    sort_order: 10,
+    is_topping: false,
+    options: DEFAULT_DRINK_OPTIONS,
+  },
+  { id: 'addon-11', name_ar: 'كرمليز أوبيون', name_en: 'Caramelized Onion', price: 10, is_available: true, sort_order: 11, is_topping: true },
+  { id: 'addon-12', name_ar: 'إضافة هاليبنو', name_en: 'Jalapeño Add-on', price: 5, is_available: true, sort_order: 12, is_topping: true },
+]
+
+/**
+ * Helper to identify if an addon is a topping for sandwiches/fries,
+ * or a standalone side/drink meant only for the Addons section.
+ */
+export function isSandwichTopping(addon: Addon): boolean {
+  if (addon.is_topping === false) return false
+  if (addon.is_topping === true) return true
+
+  // Fallback heuristic based on names / IDs
+  const lowerEn = (addon.name_en || '').toLowerCase()
+  const nameAr = addon.name_ar || ''
+
+  if (
+    addon.id === 'addon-7' ||
+    addon.id === 'addon-8' ||
+    addon.id === 'addon-9' ||
+    addon.id === 'addon-10' ||
+    lowerEn.includes('fries packet') ||
+    lowerEn.includes('packet') ||
+    nameAr.includes('باكيت') ||
+    lowerEn.includes('sauce cup') ||
+    nameAr.includes('كاب صوص') ||
+    nameAr.includes('صوص كاب') ||
+    lowerEn.includes('water') ||
+    nameAr.includes('مياه') ||
+    lowerEn.includes('drink') ||
+    lowerEn.includes('soda') ||
+    lowerEn.includes('sparkling') ||
+    nameAr.includes('غازية') ||
+    nameAr.includes('مشروب')
+  ) {
+    return false
+  }
+
+  return true
+}
 
 export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   // Beef
