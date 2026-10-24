@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Phone, MapPin, Clock, AlertTriangle, CheckCircle2, ExternalLink, Edit3, Trash2 } from 'lucide-react';
+import { Phone, MapPin, Clock, AlertTriangle, CheckCircle2, ExternalLink, Edit3, Trash2, Store, Bike } from 'lucide-react';
 import { Order, OrderStatus, SIZE_LABELS } from '@/types';
 import { StatusBadge } from './StatusBadge';
 import { cn } from '../ui/cn';
@@ -54,9 +54,23 @@ export function OrderCard({
       <div className="flex justify-between items-start mb-4">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-lg font-black text-gray-900">
-              #{order.order_number.toString().padStart(4, '0')}
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-black text-gray-900">
+                #{order.order_number.toString().padStart(4, '0')}
+              </h3>
+              {/* Order Type Badge: Pickup vs Delivery */}
+              {order.order_type === 'pickup' || order.delivery_address?.includes('استلام من الفرع') ? (
+                <span className="inline-flex items-center gap-1 text-[11px] bg-purple-100 text-purple-900 font-extrabold px-2.5 py-0.5 rounded-full border border-purple-300 shadow-xs">
+                  <Store className="w-3.5 h-3.5 text-purple-700" />
+                  <span>استلام من الفرع (Pickup)</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-[11px] bg-blue-50 text-blue-800 font-extrabold px-2.5 py-0.5 rounded-full border border-blue-200">
+                  <Bike className="w-3.5 h-3.5 text-blue-600" />
+                  <span>توصيل دليفري (Delivery)</span>
+                </span>
+              )}
+            </div>
 
             {/* First-Time Customer Verification Badge */}
             {order.is_first_order ? (

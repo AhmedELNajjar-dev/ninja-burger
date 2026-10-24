@@ -22,19 +22,21 @@ export async function sendOrderNotification(order: Order): Promise<boolean> {
     return false
   }
 
+  const isPickup = order.order_type === 'pickup' || order.delivery_address?.includes('استلام من الفرع')
+  const orderTypeTag = isPickup ? ' 🏬 [استلام من الفرع / Pickup]' : ' 🛵 [توصيل / Delivery]'
   const firstTimerTag = order.is_first_order ? ' ⚠️ [عميل جديد — أول طلب]' : ' ⭐ [عميل سابق]'
 
   const embed: any = {
-    title: `🍔 طلب جديد #${String(order.order_number).padStart(4, '0')}${firstTimerTag}`,
-    color: order.is_first_order ? 0xF5A623 : 0xCC1F1A, // Yellow if new customer, Red if repeat
+    title: `🍔 طلب جديد #${String(order.order_number).padStart(4, '0')}${orderTypeTag}${firstTimerTag}`,
+    color: isPickup ? 0x8E44AD : (order.is_first_order ? 0xF5A623 : 0xCC1F1A),
     fields: [
       { name: '👤 العميل', value: order.customer_name, inline: true },
       { name: '📞 الهاتف', value: `${order.customer_phone} (${order.is_first_order ? 'يرجى الاتصال للتأكيد 📞' : 'عميل موثوق'})`, inline: true },
-      { name: '\u200b', value: '\u200b', inline: true }, // spacer
-      { name: '📍 عنوان التوصيل', value: order.delivery_address, inline: false },
+      { name: '🏬 طريقة الاستلام', value: isPickup ? 'استلام من الفرع (بدون دليفري)' : 'توصيل منزلي 🛵', inline: true },
+      { name: isPickup ? '🏬 الاستلام' : '📍 عنوان التوصيل', value: isPickup ? 'فرع نينجا برجر — المعادي، شارع 9' : order.delivery_address, inline: false },
       { name: '🛒 الطلبات', value: formatItems(order.items), inline: false },
       { name: '💰 الإجمالي', value: `${order.total_amount} ج`, inline: true },
-      { name: '💳 الدفع', value: 'كاش عند الاستلام', inline: true },
+      { name: '💳 الدفع', value: isPickup ? 'كاش بالفرع' : 'كاش عند الاستلام', inline: true },
     ],
     footer: { text: 'نينجا برجر — نظام الطلبات' },
     timestamp: new Date(order.created_at).toISOString(),

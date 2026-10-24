@@ -95,3 +95,6 @@ BEGIN
 END $$;
 
 
+
+-- ── Support Pickup Orders in orders table ──
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS order_type text NOT NULL DEFAULT 'delivery' CHECK (order_type IN ('delivery', 'pickup'));

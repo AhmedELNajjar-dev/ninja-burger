@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Clock, CheckCircle2, Truck, Award, Bell, MapPin, Calendar, XCircle } from 'lucide-react'
+import { Clock, CheckCircle2, Truck, Award, Bell, MapPin, Calendar, XCircle, Store } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { Order, OrderStatus } from '@/types'
 import { useTranslation } from '@/lib/useTranslation'

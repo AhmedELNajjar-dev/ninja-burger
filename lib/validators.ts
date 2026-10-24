@@ -21,46 +21,80 @@ export const registerSchema = z.object({
     .regex(/[0-9]/, 'يجب أن تحتوي على رقم'),
 })
 
-export const checkoutSchema = z.object({
-  customer_name: z.string().min(2, 'الاسم مطلوب').max(60),
-  customer_phone: z
-    .string()
-    .regex(egyptianPhoneRegex, 'رقم الهاتف غير صحيح'),
-  delivery_address: z.string().min(3, 'أدخل اسم الشارع والمنطقة').max(300),
-  building_no: z.string().min(1, 'رقم العمارة مطلوب').max(50),
-  floor_no: z.string().min(1, 'الدور مطلوب').max(50),
-  apartment_no: z.string().min(1, 'رقم الشقة مطلوب').max(50),
-  map_coordinates: z
-    .object({
-      lat: z.number().min(-90).max(90),
-      lng: z.number().min(-180).max(180),
-    })
-    .optional(),
-  map_url: z.string().max(300).optional(),
-  notes: z.string().max(500).optional(),
-  items: z
-    .array(
-      z
-        .object({
-          menuItemId: z.string().uuid(),
-          size: z.enum(['single', 'double', 'triple']),
-          quantity: z.number().int().min(1).max(20),
-          addons: z
-            .array(
-              z
-                .object({
-                  id: z.string().uuid(),
-                })
-                .passthrough()
-            )
-            .max(10)
-            .default([]),
+export const checkoutSchema = z
+  .object({
+    customer_name: z.string().min(2, 'الاسم مطلوب').max(60),
+    customer_phone: z
+      .string()
+      .regex(egyptianPhoneRegex, 'رقم الهاتف غير صحيح'),
+    order_type: z.enum(['delivery', 'pickup']).default('delivery'),
+    delivery_address: z.string().max(300).optional().default(''),
+    building_no: z.string().max(50).optional().default(''),
+    floor_no: z.string().max(50).optional().default(''),
+    apartment_no: z.string().max(50).optional().default(''),
+    map_coordinates: z
+      .object({
+        lat: z.number().min(-90).max(90),
+        lng: z.number().min(-180).max(180),
+      })
+      .optional(),
+    map_url: z.string().max(300).optional(),
+    notes: z.string().max(500).optional(),
+    items: z
+      .array(
+        z
+          .object({
+            menuItemId: z.string().uuid(),
+            size: z.enum(['single', 'double', 'triple']),
+            quantity: z.number().int().min(1).max(20),
+            addons: z
+              .array(
+                z
+                  .object({
+                    id: z.string().uuid(),
+                  })
+                  .passthrough()
+              )
+              .max(10)
+              .default([]),
+          })
+          .passthrough()
+      )
+      .min(1, 'السلة فارغة')
+      .max(30),
+  })
+  .superRefine((data, ctx) => {
+    if (data.order_type === 'delivery') {
+      if (!data.delivery_address || data.delivery_address.trim().length < 3) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'أدخل اسم الشارع والمنطقة',
+          path: ['delivery_address'],
         })
-        .passthrough()
-    )
-    .min(1, 'السلة فارغة')
-    .max(30),
-})
+      }
+      if (!data.building_no || data.building_no.trim().length < 1) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'رقم العمارة مطلوب',
+          path: ['building_no'],
+        })
+      }
+      if (!data.floor_no || data.floor_no.trim().length < 1) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'الدور مطلوب',
+          path: ['floor_no'],
+        })
+      }
+      if (!data.apartment_no || data.apartment_no.trim().length < 1) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'رقم الشقة مطلوب',
+          path: ['apartment_no'],
+        })
+      }
+    }
+  })
 
 export const updateStatusSchema = z.object({
   status: z.enum(['pending', 'confirmed', 'on_delivery', 'finished', 'cancelled']),

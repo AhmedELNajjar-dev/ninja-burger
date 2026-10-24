@@ -172,6 +172,22 @@ export function EditOrderModal({
               </div>
             )}
 
+            {/* Order Type Indicator */}
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-200">
+              <span className="text-xs font-bold text-gray-600">طريقة الاستلام:</span>
+              {order.order_type === 'pickup' || order.delivery_address?.includes('استلام من الفرع') ? (
+                <span className="text-xs font-black text-purple-800 bg-purple-100 px-3 py-1 rounded-full border border-purple-200 flex items-center gap-1.5">
+                  <span>🏬</span>
+                  <span>استلام من الفرع (Pickup)</span>
+                </span>
+              ) : (
+                <span className="text-xs font-black text-blue-800 bg-blue-100 px-3 py-1 rounded-full border border-blue-200 flex items-center gap-1.5">
+                  <span>🛵</span>
+                  <span>توصيل منزلي (Delivery)</span>
+                </span>
+              )}
+            </div>
+
             {/* Status Selector */}
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1.5">

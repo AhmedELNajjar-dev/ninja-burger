@@ -86,6 +86,8 @@ export interface CartItem {
 
 // ─── Order Types ─────────────────────────────────────────────────────────────
 
+export type OrderType = 'delivery' | 'pickup'
+
 export type OrderStatus = 'pending' | 'confirmed' | 'on_delivery' | 'finished' | 'cancelled'
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
@@ -129,6 +131,7 @@ export interface Order {
   user_id: string | null
   customer_name: string
   customer_phone: string
+  order_type?: OrderType
   delivery_address: string
   building_no?: string | null
   floor_no?: string | null
@@ -150,6 +153,7 @@ export interface Order {
 export interface CheckoutPayload {
   customer_name: string
   customer_phone: string
+  order_type?: OrderType
   delivery_address: string
   building_no?: string
   floor_no?: string

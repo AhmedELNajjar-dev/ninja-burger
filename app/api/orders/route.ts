@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
     const {
       customer_name,
       customer_phone,
+      order_type = 'delivery',
       delivery_address,
       building_no,
       floor_no,
@@ -134,8 +135,9 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Server-computed total amount including fixed delivery fee
-    const total_amount = Math.round((subtotal + DELIVERY_FEE) * 100) / 100
+    // Server-computed total amount (0 delivery fee for pickup, 35 EGP for delivery)
+    const effectiveDeliveryFee = order_type === 'pickup' ? 0 : DELIVERY_FEE
+    const total_amount = Math.round((subtotal + effectiveDeliveryFee) * 100) / 100
 
     // ── Check if this customer already has past orders ──
     const { count: pastOrdersCount } = await adminClient
@@ -153,7 +155,7 @@ export async function POST(request: NextRequest) {
       apartment_no ? `شقة: ${apartment_no}` : null,
     ].filter(Boolean)
 
-    const fullAddress = addressDetailsParts.join(' | ')
+    const fullAddress = order_type === 'pickup' ? 'استلام من الفرع (Pickup)' : addressDetailsParts.join(' | ')
 
     // ── Prevent Discord Link Injection: Validate map_url strictly ──
     const safeMapUrl = map_coordinates
@@ -169,6 +171,7 @@ export async function POST(request: NextRequest) {
         user_id: user?.id ?? null,
         customer_name,
         customer_phone,
+        order_type,
         delivery_address: fullAddress,
         notes: notes ?? null,
         items: verifiedItems,
@@ -187,7 +190,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ── Save address into user's profile for 1-click auto-fill on next orders ──
-    if (user) {
+    if (user && order_type === 'delivery') {
       adminClient
         .from('profiles')
         .update({
