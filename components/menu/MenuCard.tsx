@@ -75,7 +75,12 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-card border border-gray-100 overflow-hidden flex flex-col transition-all duration-200 hover:shadow-ninja-lg hover:-translate-y-0.5">
+    <div className={cn(
+      "bg-white rounded-3xl shadow-card border border-gray-100 overflow-hidden flex flex-col transition-all duration-200",
+      !item.is_available
+        ? "opacity-65 grayscale-[35%] border-gray-200 select-none"
+        : "hover:shadow-ninja-lg hover:-translate-y-0.5"
+    )}>
       {/* Food Image / Placeholder */}
       <div className="h-44 sm:h-48 bg-gradient-to-br from-red-50 via-orange-50 to-amber-50 relative flex items-center justify-center overflow-hidden">
         {item.image_url ? (
@@ -117,7 +122,8 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
               item.name_en,
               item.name_ar,
               item.description_ar,
-              isArabic
+              isArabic,
+              item.description_en
             );
             return localizedDesc ? (
               <p className="text-xs sm:text-sm text-gray-500 mt-2 line-clamp-2 leading-relaxed">

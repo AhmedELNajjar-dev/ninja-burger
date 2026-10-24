@@ -99,8 +99,15 @@ export function getLocalizedDescription(
   nameEn?: string | null,
   nameAr?: string | null,
   descriptionAr?: string | null,
-  isArabic?: boolean
+  isArabic?: boolean,
+  descriptionEn?: string | null
 ): string | null {
+  if (isArabic) {
+    return descriptionAr || null
+  }
+  if (descriptionEn && descriptionEn.trim().length > 0) {
+    return descriptionEn
+  }
   if (isArabic) {
     return descriptionAr || null
   }

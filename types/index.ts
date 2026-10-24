@@ -33,6 +33,7 @@ export interface MenuItem {
   name_ar: string
   name_en: string
   description_ar: string | null
+  description_en?: string | null
   price_single: number
   price_double?: number | null
   price_triple?: number | null

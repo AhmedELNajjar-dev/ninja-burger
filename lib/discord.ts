@@ -117,3 +117,76 @@ export async function sendOrderCancellationNotification(
     return false
   }
 }
+
+export async function sendOrderEditNotification(
+  order: Order,
+  changes: { field: string; oldVal: string; newVal: string }[]
+): Promise<boolean> {
+  if (!WEBHOOK_URL) return false
+
+  const changesSummary = changes
+    .map((c) => `• **${c.field}:** \`${c.oldVal}\` ➔ \`${c.newVal}\``)
+    .join('\n')
+
+  const embed: any = {
+    title: `✏️ تم تعديل بيانات الطلب #${String(order.order_number).padStart(4, '0')}`,
+    description: `⚠️ **تنبيه للمطبخ:** قامت الإدارة بتعديل بيانات هذا الطلب:\n\n${changesSummary}`,
+    color: 0x3498DB, // Blue
+    fields: [
+      { name: '👤 العميل', value: order.customer_name, inline: true },
+      { name: '📞 الهاتف', value: order.customer_phone, inline: true },
+      { name: '💰 الإجمالي', value: `${order.total_amount} ج`, inline: true },
+      { name: '📍 العنوان الحالي', value: order.delivery_address, inline: false },
+      { name: '🛒 الأصناف', value: formatItems(order.items), inline: false },
+    ],
+    footer: { text: 'نينجا برجر — تعديل طلب بواسطة الإدارة' },
+    timestamp: new Date().toISOString(),
+  }
+
+  try {
+    const response = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ embeds: [embed] }),
+    })
+    return response.ok
+  } catch (error) {
+    console.error('[Discord] Error sending edit webhook:', error)
+    return false
+  }
+}
+
+export async function sendOrderDeletionNotification(
+  order: Order,
+  previousStatus: string
+): Promise<boolean> {
+  if (!WEBHOOK_URL) return false
+
+  const embed: any = {
+    title: `🗑️ تم حذف الطلب #${String(order.order_number).padStart(4, '0')} نهائياً`,
+    description: `⚠️ **تنبيه فوري للمطبخ:** قامت الإدارة بحذف هذا الطلب نهائياً من قاعدة البيانات. يرجى إلغاء أي تجهيز فوراً.`,
+    color: 0x2C3E50, // Dark Slate
+    fields: [
+      { name: '📊 الحالة قبل الحذف', value: `\`${previousStatus}\``, inline: true },
+      { name: '👤 العميل', value: order.customer_name, inline: true },
+      { name: '📞 الهاتف', value: order.customer_phone, inline: true },
+      { name: '💰 قيمة الطلب المحذوف', value: `${order.total_amount} ج`, inline: true },
+      { name: '📍 العنوان', value: order.delivery_address, inline: false },
+      { name: '🛒 محتويات الطلب المحذوف', value: formatItems(order.items), inline: false },
+    ],
+    footer: { text: 'نينجا برجر — إشعار حذف نهائي للطلب' },
+    timestamp: new Date().toISOString(),
+  }
+
+  try {
+    const response = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ embeds: [embed] }),
+    })
+    return response.ok
+  } catch (error) {
+    console.error('[Discord] Error sending deletion webhook:', error)
+    return false
+  }
+}
