@@ -235,19 +235,19 @@ export default function RegisterPage() {
                     <label className="block text-sm font-semibold text-ninja-dark mb-2">
                       {t.password}
                     </label>
-                    <div className="relative">
+                    <div className="relative" dir="ltr">
                       <input
                         {...register('password')}
                         type={showPassword ? 'text' : 'password'}
                         autoComplete="new-password"
                         placeholder="••••••••"
-                        dir="ltr"
-                        className={`input-field pe-11 ${errors.password ? 'input-field-error' : ''}`}
+                        className={`input-field pr-11 pl-4 ${errors.password ? 'input-field-error' : ''}`}
                       />
                       <button
                         type="button"
-                        className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
                         onClick={() => setShowPassword((v) => !v)}
+                        aria-label={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
                       >
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
@@ -263,19 +263,19 @@ export default function RegisterPage() {
                     <label className="block text-sm font-semibold text-ninja-dark mb-2">
                       {t.confirmPassword}
                     </label>
-                    <div className="relative">
+                    <div className="relative" dir="ltr">
                       <input
                         {...register('confirm_password')}
                         type={showConfirm ? 'text' : 'password'}
                         autoComplete="new-password"
                         placeholder="••••••••"
-                        dir="ltr"
-                        className={`input-field pe-11 ${errors.confirm_password ? 'input-field-error' : ''}`}
+                        className={`input-field pr-11 pl-4 ${errors.confirm_password ? 'input-field-error' : ''}`}
                       />
                       <button
                         type="button"
-                        className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
                         onClick={() => setShowConfirm((v) => !v)}
+                        aria-label={showConfirm ? 'إخفاء تأكيد كلمة المرور' : 'إظهار تأكيد كلمة المرور'}
                       >
                         {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>

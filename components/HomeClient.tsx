@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { CategoryTabs } from '@/components/menu/CategoryTabs'
 import { MenuGrid } from '@/components/menu/MenuGrid'
+import { AddonsShowcase } from '@/components/menu/AddonsShowcase'
 import { useCartStore } from '@/store/cartStore'
 import type { Category, MenuItem, Addon } from '@/types'
 
@@ -29,6 +30,12 @@ export default function HomeClient({
     }
   }, [isLoggedIn])
 
+  const activeCategory = categories.find((c) => c.id === activeCategoryId)
+  const isAddonCategory =
+    activeCategory?.name_en?.toLowerCase().includes('add-on') ||
+    activeCategory?.name_ar?.includes('الاضافات') ||
+    activeCategory?.name_ar?.includes('إضافات')
+
   const filteredItems = activeCategoryId
     ? allItems.filter((item) => item.category_id === activeCategoryId)
     : allItems
@@ -41,7 +48,11 @@ export default function HomeClient({
         onSelect={setActiveCategoryId}
       />
       <div className="mt-6">
-        <MenuGrid items={filteredItems} addons={addons} isLoggedIn={isLoggedIn} />
+        {isAddonCategory && filteredItems.length === 0 ? (
+          <AddonsShowcase addons={addons} />
+        ) : (
+          <MenuGrid items={filteredItems} addons={addons} isLoggedIn={isLoggedIn} />
+        )}
       </div>
     </>
   )

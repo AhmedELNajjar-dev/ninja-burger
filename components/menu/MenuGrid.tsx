@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { MenuItem, Addon } from '@/types';
 import { MenuCard } from './MenuCard';
+import { useTranslation } from '@/lib/useTranslation';
 
 interface MenuGridProps {
   items: MenuItem[];
@@ -12,12 +13,14 @@ interface MenuGridProps {
 }
 
 export function MenuGrid({ items, addons, isLoggedIn }: MenuGridProps) {
+  const { t } = useTranslation();
+
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
         <div className="text-6xl mb-4">🥷</div>
-        <h3 className="text-xl font-bold text-gray-900 mb-2">لا توجد أصناف هنا</h3>
-        <p className="text-gray-500">قريباً سنقوم بإضافة المزيد من الأصناف اللذيذة!</p>
+        <h3 className="text-xl font-bold text-gray-900 mb-2">{t.noItemsHere}</h3>
+        <p className="text-gray-500">{t.moreItemsSoon}</p>
       </div>
     );
   }

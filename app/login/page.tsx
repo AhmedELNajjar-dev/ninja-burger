@@ -139,17 +139,16 @@ function LoginFormContent() {
                 <label className="block text-sm font-semibold text-ninja-dark mb-2">
                   {t.identifier}
                 </label>
-                <div className="relative">
+                <div className="relative" dir="ltr">
                   <input
                     {...register('identifier')}
                     type="text"
                     inputMode="email"
                     autoComplete="email"
                     placeholder={t.identifierPlaceholder}
-                    className={`input-field pe-11 ${errors.identifier ? 'input-field-error' : ''}`}
-                    dir="ltr"
+                    className={`input-field pl-11 pr-4 ${errors.identifier ? 'input-field-error' : ''}`}
                   />
-                  <span className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
                     {isPhone ? <Phone size={18} /> : <Mail size={18} />}
                   </span>
                 </div>
@@ -163,18 +162,17 @@ function LoginFormContent() {
                 <label className="block text-sm font-semibold text-ninja-dark mb-2">
                   {t.password}
                 </label>
-                <div className="relative">
+                <div className="relative" dir="ltr">
                   <input
                     {...register('password')}
                     type={showPassword ? 'text' : 'password'}
                     autoComplete="current-password"
                     placeholder="••••••••"
-                    className={`input-field pe-11 ${errors.password ? 'input-field-error' : ''}`}
-                    dir="ltr"
+                    className={`input-field pr-11 pl-4 ${errors.password ? 'input-field-error' : ''}`}
                   />
                   <button
                     type="button"
-                    className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
                     onClick={() => setShowPassword((v) => !v)}
                     aria-label={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
                   >

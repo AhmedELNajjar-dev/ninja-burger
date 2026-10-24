@@ -9,6 +9,7 @@ import { useCartStore } from '@/store/cartStore';
 import { cn } from '../ui/cn';
 import { Button } from '../ui/Button';
 import { useTranslation } from '@/lib/useTranslation';
+import { getLocalizedDescription } from '@/lib/menuTranslations';
 
 interface MenuCardProps {
   item: MenuItem;
@@ -111,18 +112,26 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
             </span>
           </div>
 
-          {item.description_ar && (
-            <p className="text-xs sm:text-sm text-gray-500 mt-2 line-clamp-2 leading-relaxed">
-              {item.description_ar}
-            </p>
-          )}
+          {(() => {
+            const localizedDesc = getLocalizedDescription(
+              item.name_en,
+              item.name_ar,
+              item.description_ar,
+              isArabic
+            );
+            return localizedDesc ? (
+              <p className="text-xs sm:text-sm text-gray-500 mt-2 line-clamp-2 leading-relaxed">
+                {localizedDesc}
+              </p>
+            ) : null;
+          })()}
         </div>
 
         {/* Sizes Selector (if multiple tiers exist) */}
         {sizes.length > 1 && (
           <div className="space-y-1.5">
             <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">
-              الحجم:
+              {t.sizeLabel}:
             </span>
             <div className="grid grid-cols-3 gap-1.5 bg-gray-100/70 p-1 rounded-2xl">
               {sizes.map(({ size, price }) => {
@@ -160,16 +169,16 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
             >
               <div className="flex items-center gap-1.5">
                 <Sparkles size={14} className="text-ninja-yellow" />
-                <span>تخصيص الإضافات</span>
+                <span>{t.customizeAddons}</span>
                 {selectedAddons.size > 0 && (
                   <span className="bg-ninja-yellow text-ninja-dark text-[10px] font-black px-1.5 py-0.2 rounded-full">
-                    {selectedAddons.size} مختارة
+                    {selectedAddons.size} {t.addonsSelected}
                   </span>
                 )}
               </div>
               <div className="flex items-center gap-1 text-gray-400">
                 <span className="text-[11px] font-normal">
-                  {showAddons ? 'إغلاق' : `(${addons.length} متاح)`}
+                  {showAddons ? t.close : `(${addons.length} ${t.addonsAvailable})`}
                 </span>
                 {showAddons ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </div>
@@ -218,7 +227,7 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
         <div className="pt-2 border-t border-gray-100 flex items-center justify-between gap-3">
           <div>
             <span className="text-[10px] text-gray-400 block font-semibold leading-none mb-0.5">
-              السعر
+              {t.priceLabel}
             </span>
             <span className="text-2xl font-black text-ninja-dark leading-none">
               {totalPrice} <span className="text-sm font-bold text-ninja-red">{t.currency}</span>
@@ -245,7 +254,7 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
                   <span>{t.addToCart}</span>
                 </span>
               ) : (
-                isArabic ? 'غير متوفر' : 'Out of stock'
+                t.outOfStock
               )}
             </Button>
           </motion.div>
