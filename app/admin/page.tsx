@@ -16,30 +16,29 @@ export default async function AdminPage() {
 
   if (!user) redirect('/login?redirect=/admin')
 
-  // Verify admin role using adminClient (bypasses RLS on server)
-  const { data: profile } = await adminClient
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
+  // Fetch admin profile and initial live data concurrently (bypasses RLS on server)
+  const [
+    { data: profile },
+    { data: orders },
+    { data: menuItems },
+    { data: categories },
+    { data: addons },
+  ] = await Promise.all([
+    adminClient.from('profiles').select('*').eq('id', user.id).single(),
+    adminClient
+      .from('orders')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(100),
+    adminClient
+      .from('menu_items')
+      .select('*, category:categories(id, name_ar, name_en)')
+      .order('sort_order', { ascending: true }),
+    adminClient.from('categories').select('*').order('sort_order', { ascending: true }),
+    adminClient.from('addons').select('*').order('sort_order', { ascending: true }),
+  ])
 
   if (!profile || profile.role !== 'admin') redirect('/')
-
-  // Fetch initial orders, menu items, and categories in parallel
-  const [{ data: orders }, { data: menuItems }, { data: categories }, { data: addons }] =
-    await Promise.all([
-      adminClient
-        .from('orders')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(100),
-      adminClient
-        .from('menu_items')
-        .select('*, category:categories(id, name_ar, name_en)')
-        .order('sort_order', { ascending: true }),
-      adminClient.from('categories').select('*').order('sort_order', { ascending: true }),
-      adminClient.from('addons').select('*').order('sort_order', { ascending: true }),
-    ])
 
   // Count order frequency per phone number to identify first-time customers
   const phoneCounts: Record<string, number> = {}

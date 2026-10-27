@@ -26,25 +26,16 @@ export default async function HomePage({
     supabase.auth.getUser(),
   ])
 
-  // Fetch profile if user is logged in
+  // Fetch profile directly via adminClient if user is logged in (avoids sequential fallback)
   let profile: Profile | null = null
   if (user) {
-    const { data } = await supabase
+    const adminClient = createAdminClient()
+    const { data } = await adminClient
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .single()
-    if (data) {
-      profile = data
-    } else {
-      const adminClient = createAdminClient()
-      const { data: fallbackProfile } = await adminClient
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-      profile = fallbackProfile
-    }
+    profile = data
   }
 
   // Determine active category

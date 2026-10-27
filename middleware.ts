@@ -2,6 +2,27 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // ── Protected routes ─────────────────────────────────────────
+  const requiresAuth =
+    pathname.startsWith('/admin') || pathname.startsWith('/orders')
+
+  // Fast-path: check if a Supabase auth cookie exists before making a network roundtrip
+  const hasAuthCookie = request.cookies
+    .getAll()
+    .some((cookie) => cookie.name.startsWith('sb-'))
+
+  if (!hasAuthCookie) {
+    if (requiresAuth) {
+      const loginUrl = request.nextUrl.clone()
+      loginUrl.pathname = '/login'
+      loginUrl.searchParams.set('redirect', pathname)
+      return NextResponse.redirect(loginUrl)
+    }
+    return NextResponse.next({ request })
+  }
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -34,12 +55,6 @@ export async function middleware(request: NextRequest) {
   } catch {
     user = null
   }
-
-  const { pathname } = request.nextUrl
-
-  // ── Protected routes ─────────────────────────────────────────
-  const requiresAuth = pathname.startsWith('/admin') ||
-    pathname.startsWith('/orders')
 
   if (requiresAuth && !user) {
     const loginUrl = request.nextUrl.clone()

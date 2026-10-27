@@ -64,6 +64,10 @@ export default function HomeClient({
       } catch {}
     }
 
+    // Immediate fresh fetch on mount so navigating back from /admin in the same tab
+    // bypasses any stale Next.js Client Router Cache snapshot
+    fetchFreshMenu()
+
     const channel = supabase
       .channel('customer-menu-realtime', {
         config: { broadcast: { self: false } },
