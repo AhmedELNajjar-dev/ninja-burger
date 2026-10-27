@@ -25,8 +25,8 @@ export default async function RefundsPage() {
       .from('profiles')
       .select('*')
       .eq('id', user.id)
-      .single()
-    profile = data
+      .maybeSingle()
+    profile = data ?? null
   }
 
   const sections: LegalSection[] = [

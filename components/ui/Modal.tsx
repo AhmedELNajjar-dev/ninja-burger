@@ -66,8 +66,14 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
         const first = focusables[0];
         const last = focusables[focusables.length - 1];
 
+        if (!modalRef.current.contains(document.activeElement)) {
+          e.preventDefault();
+          first.focus();
+          return;
+        }
+
         if (e.shiftKey) {
-          if (document.activeElement === first) {
+          if (document.activeElement === first || document.activeElement === modalRef.current) {
             e.preventDefault();
             last.focus();
           }

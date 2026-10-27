@@ -91,4 +91,54 @@ const validResult = arSchema.safeParse({
 })
 assert.equal(validResult.success, true, 'Checked agree_terms with valid inputs must pass')
 
-console.log('✓ All compliance schema tests passed successfully!')
+// Test 5: Server-side registerSchema rejects payload without agree_terms
+const serverRegisterSchema = z.object({
+  full_name: z.string().min(2, 'الاسم يجب أن يكون حرفين على الأقل').max(60),
+  phone: z.string().regex(egyptianPhone, 'رقم الهاتف غير صحيح (مثال: 01012345678)'),
+  email: z.string().email('البريد الإلكتروني غير صحيح'),
+  password: z
+    .string()
+    .min(8, 'كلمة المرور يجب أن تكون 8 أحرف على الأقل')
+    .regex(/[A-Z]/, 'يجب أن تحتوي على حرف كبير')
+    .regex(/[0-9]/, 'يجب أن تحتوي على رقم'),
+  agree_terms: z.literal(true, {
+    errorMap: () => ({
+      message: 'يرجى الموافقة على شروط الاستخدام وسياسة الخصوصية للمتابعة',
+    }),
+  }),
+})
+
+const serverMissingConsent = serverRegisterSchema.safeParse({
+  full_name: 'أحمد علي',
+  phone: '01012345678',
+  email: 'ahmed@example.com',
+  password: 'Password123',
+})
+assert.equal(serverMissingConsent.success, false, 'Server registerSchema must reject payload missing agree_terms')
+assert.equal(
+  serverMissingConsent.error.errors[0].message,
+  'يرجى الموافقة على شروط الاستخدام وسياسة الخصوصية للمتابعة',
+  'Server error message matches requirement'
+)
+
+// Test 6: Server-side registerSchema rejects agree_terms = false
+const serverConsentFalse = serverRegisterSchema.safeParse({
+  full_name: 'أحمد علي',
+  phone: '01012345678',
+  email: 'ahmed@example.com',
+  password: 'Password123',
+  agree_terms: false,
+})
+assert.equal(serverConsentFalse.success, false, 'Server registerSchema must reject agree_terms = false')
+
+// Test 7: Server-side registerSchema accepts agree_terms = true
+const serverConsentTrue = serverRegisterSchema.safeParse({
+  full_name: 'أحمد علي',
+  phone: '01012345678',
+  email: 'ahmed@example.com',
+  password: 'Password123',
+  agree_terms: true,
+})
+assert.equal(serverConsentTrue.success, true, 'Server registerSchema accepts valid payload with agree_terms: true')
+
+console.log('✓ All compliance schema tests (client & server) passed successfully!')

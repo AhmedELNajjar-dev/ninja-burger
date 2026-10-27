@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingBag } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
@@ -13,10 +13,32 @@ export function CartDrawer() {
   const setIsCartOpen = (open: boolean) => useCartStore.setState({ isCartOpen: open });
   const openCheckout = () => useCartStore.setState({ isCheckoutOpen: true, isCartOpen: false });
   const { t, isArabic } = useTranslation();
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const previousActiveElement = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    if (isCartOpen) document.body.style.overflow = 'hidden';
-    else document.body.style.overflow = 'unset';
+    if (isCartOpen) {
+      previousActiveElement.current = document.activeElement as HTMLElement;
+      document.body.style.overflow = 'hidden';
+      const timer = setTimeout(() => {
+        if (drawerRef.current) {
+          const focusable = drawerRef.current.querySelectorAll<HTMLElement>(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusable.length > 0) {
+            focusable[0].focus();
+          } else {
+            drawerRef.current.focus();
+          }
+        }
+      }, 50);
+      return () => clearTimeout(timer);
+    } else {
+      document.body.style.overflow = 'unset';
+      if (previousActiveElement.current && typeof previousActiveElement.current.focus === 'function') {
+        previousActiveElement.current.focus();
+      }
+    }
     return () => { document.body.style.overflow = 'unset'; };
   }, [isCartOpen]);
 
@@ -26,6 +48,35 @@ export function CartDrawer() {
       if (e.key === 'Escape') {
         e.stopPropagation();
         setIsCartOpen(false);
+        return;
+      }
+
+      if (e.key === 'Tab' && drawerRef.current) {
+        const focusables = drawerRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusables.length === 0) return;
+
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+
+        if (!drawerRef.current.contains(document.activeElement)) {
+          e.preventDefault();
+          first.focus();
+          return;
+        }
+
+        if (e.shiftKey) {
+          if (document.activeElement === first || document.activeElement === drawerRef.current) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -46,11 +97,13 @@ export function CartDrawer() {
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
           />
           <motion.div
+            ref={drawerRef}
+            tabIndex={-1}
             initial={{ x: isArabic ? '100%' : '-100%' }}
             animate={{ x: 0 }}
             exit={{ x: isArabic ? '100%' : '-100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className={`fixed top-0 ${isArabic ? 'right-0' : 'left-0'} h-full w-full max-w-md bg-white shadow-2xl z-[101] flex flex-col`}
+            className={`fixed top-0 ${isArabic ? 'right-0' : 'left-0'} h-full w-full max-w-md bg-white shadow-2xl z-[101] flex flex-col focus:outline-none`}
             dir={isArabic ? 'rtl' : 'ltr'}
             role="dialog"
             aria-modal="true"

@@ -86,14 +86,13 @@ export default function RegisterPage() {
   const [serverError, setServerError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
-  const schema = useMemo(() => getRegisterSchema(isArabic), [isArabic])
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
   } = useForm<RegisterForm>({
-    resolver: zodResolver(schema),
+    resolver: (values, ctx, opts) => zodResolver(getRegisterSchema(isArabic))(values, ctx, opts),
     defaultValues: {
       agree_terms: false as unknown as true,
     },
@@ -317,7 +316,13 @@ export default function RegisterPage() {
 
                   {/* Mandatory Policy Consent */}
                   <div className="pt-1">
-                    <div className="flex items-start gap-2.5">
+                    <div
+                      className={`flex items-start gap-2.5 p-2.5 rounded-2xl transition-all ${
+                        errors.agree_terms
+                          ? 'bg-red-50/80 border border-red-300 ring-2 ring-red-100'
+                          : 'border border-transparent hover:bg-gray-50/60'
+                      }`}
+                    >
                       <div className="flex items-center h-5 mt-0.5">
                         <input
                           id="agree_terms"
@@ -325,83 +330,86 @@ export default function RegisterPage() {
                           {...register('agree_terms')}
                           className={`w-4 h-4 rounded cursor-pointer accent-ninja-red transition-all ${
                             errors.agree_terms
-                              ? 'border-2 border-red-500 ring-2 ring-red-200'
+                              ? 'ring-2 ring-red-500'
                               : 'border-gray-300'
                           }`}
                         />
                       </div>
-                      <label
-                        htmlFor="agree_terms"
-                        className="text-xs sm:text-sm text-gray-700 leading-snug cursor-pointer select-none"
-                      >
+                      <div className="text-xs sm:text-sm text-gray-700 leading-snug">
                         {isArabic ? (
                           <>
-                            أوافق على{' '}
+                            <label htmlFor="agree_terms" className="cursor-pointer select-none">
+                              أوافق على{' '}
+                            </label>
                             <Link
                               href="/terms"
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-500 hover:text-blue-400 underline font-semibold"
-                              onClick={(e) => e.stopPropagation()}
                             >
                               شروط الاستخدام
-                            </Link>{' '}
-                            و{' '}
+                            </Link>
+                            <label htmlFor="agree_terms" className="cursor-pointer select-none">
+                              {' '}و{' '}
+                            </label>
                             <Link
                               href="/privacy"
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-500 hover:text-blue-400 underline font-semibold"
-                              onClick={(e) => e.stopPropagation()}
                             >
                               سياسة الخصوصية
-                            </Link>{' '}
-                            و{' '}
+                            </Link>
+                            <label htmlFor="agree_terms" className="cursor-pointer select-none">
+                              {' '}و{' '}
+                            </label>
                             <Link
                               href="/refunds"
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-500 hover:text-blue-400 underline font-semibold"
-                              onClick={(e) => e.stopPropagation()}
                             >
                               سياسة الاسترجاع
                             </Link>
                           </>
                         ) : (
                           <>
-                            I agree to the{' '}
+                            <label htmlFor="agree_terms" className="cursor-pointer select-none">
+                              I agree to the{' '}
+                            </label>
                             <Link
                               href="/terms"
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-500 hover:text-blue-400 underline font-semibold"
-                              onClick={(e) => e.stopPropagation()}
                             >
                               Terms of Service
                             </Link>
-                            ,{' '}
+                            <label htmlFor="agree_terms" className="cursor-pointer select-none">
+                              ,{' '}
+                            </label>
                             <Link
                               href="/privacy"
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-500 hover:text-blue-400 underline font-semibold"
-                              onClick={(e) => e.stopPropagation()}
                             >
                               Privacy Policy
                             </Link>
-                            , and{' '}
+                            <label htmlFor="agree_terms" className="cursor-pointer select-none">
+                              , and{' '}
+                            </label>
                             <Link
                               href="/refunds"
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-500 hover:text-blue-400 underline font-semibold"
-                              onClick={(e) => e.stopPropagation()}
                             >
                               Refund Policy
                             </Link>
                           </>
                         )}
-                      </label>
+                      </div>
                     </div>
 
                     {errors.agree_terms && (
