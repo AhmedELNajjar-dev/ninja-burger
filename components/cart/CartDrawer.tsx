@@ -20,6 +20,18 @@ export function CartDrawer() {
     return () => { document.body.style.overflow = 'unset'; };
   }, [isCartOpen]);
 
+  useEffect(() => {
+    if (!isCartOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        setIsCartOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isCartOpen]);
+
   const total = getTotal();
 
   return (
@@ -40,6 +52,9 @@ export function CartDrawer() {
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className={`fixed top-0 ${isArabic ? 'right-0' : 'left-0'} h-full w-full max-w-md bg-white shadow-2xl z-[101] flex flex-col`}
             dir={isArabic ? 'rtl' : 'ltr'}
+            role="dialog"
+            aria-modal="true"
+            aria-label={t.cart}
           >
             <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white z-10">
               <div className="flex items-center gap-2">
@@ -52,6 +67,7 @@ export function CartDrawer() {
               <button
                 onClick={() => setIsCartOpen(false)}
                 className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                aria-label={isArabic ? 'إغلاق السلة' : 'Close cart'}
               >
                 <X className="w-6 h-6" />
               </button>

@@ -57,6 +57,17 @@ export function LocationPickerModal({
   };
 
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  useEffect(() => {
     let isMounted = true;
 
     // Dynamically import Leaflet on client-side
@@ -165,7 +176,12 @@ export function LocationPickerModal({
 
   return (
     <div className="fixed inset-0 z-[120] bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
-      <div className="bg-white w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+      <div
+        className="bg-white w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
+        role="dialog"
+        aria-modal="true"
+        aria-label="حدد موقعك على الخريطة"
+      >
         {/* Header */}
         <div className="p-4 bg-ninja-red text-white flex items-center justify-between">
           <div className="flex items-center gap-2">

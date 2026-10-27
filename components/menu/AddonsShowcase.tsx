@@ -197,7 +197,9 @@ export function AddonsShowcase({ addons, isLoggedIn }: AddonsShowcaseProps) {
               <div>
                 {/* Top Row: Emoji & Status Badge */}
                 <div className="flex items-start justify-between gap-1 mb-2.5">
-                  <span className="text-4xl select-none filter drop-shadow-xs">{emoji}</span>
+                  <span className="text-4xl select-none filter drop-shadow-xs" role="img" aria-label={name}>
+                    {emoji}
+                  </span>
                   {!isAvailable ? (
                     <span className="text-[10px] text-red-600 font-bold bg-red-100 px-2 py-0.5 rounded-full">
                       {isArabic ? 'غير متوفر' : 'Out of stock'}

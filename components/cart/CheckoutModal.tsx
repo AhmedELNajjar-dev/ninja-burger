@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
+import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -407,6 +408,55 @@ export function CheckoutModal({ userPhone, userName, savedAddress }: CheckoutMod
               >
                 {t.confirmOrderNow} ({finalTotal} {t.currency})
               </Button>
+
+              {/* Legal disclaimer */}
+              <p className="text-[11px] sm:text-xs text-center text-gray-500 mt-2.5 leading-relaxed">
+                {isArabic ? (
+                  <>
+                    بتأكيد طلبك، أنت توافق على{' '}
+                    <Link
+                      href="/terms"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:text-blue-400 underline font-semibold"
+                    >
+                      شروط الخدمة
+                    </Link>{' '}
+                    و{' '}
+                    <Link
+                      href="/refunds"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:text-blue-400 underline font-semibold"
+                    >
+                      سياسة الاسترجاع
+                    </Link>
+                    .
+                  </>
+                ) : (
+                  <>
+                    By confirming your order, you agree to our{' '}
+                    <Link
+                      href="/terms"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:text-blue-400 underline font-semibold"
+                    >
+                      Terms of Service
+                    </Link>{' '}
+                    and{' '}
+                    <Link
+                      href="/refunds"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:text-blue-400 underline font-semibold"
+                    >
+                      Refund Policy
+                    </Link>
+                    .
+                  </>
+                )}
+              </p>
             </div>
           </form>
         )}

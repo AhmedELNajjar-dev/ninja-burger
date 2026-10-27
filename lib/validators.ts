@@ -19,6 +19,7 @@ export const registerSchema = z.object({
     .min(8, 'كلمة المرور يجب أن تكون 8 أحرف على الأقل')
     .regex(/[A-Z]/, 'يجب أن تحتوي على حرف كبير')
     .regex(/[0-9]/, 'يجب أن تحتوي على رقم'),
+  agree_terms: z.boolean().optional(),
 })
 
 export const checkoutSchema = z

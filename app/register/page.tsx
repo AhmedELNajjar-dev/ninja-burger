@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
@@ -12,26 +12,47 @@ import { useTranslation } from '@/lib/useTranslation'
 
 const egyptianPhone = /^(\+?2)?0(10|11|12|15)[0-9]{8}$/
 
-const registerSchema = z
-  .object({
-    full_name: z.string().min(2, 'الاسم يجب أن يكون حرفين على الأقل').max(60),
-    phone: z
-      .string()
-      .regex(egyptianPhone, 'رقم الهاتف غير صحيح (مثال: 01012345678)'),
-    email: z.string().email('البريد الإلكتروني غير صحيح'),
-    password: z
-      .string()
-      .min(8, 'كلمة المرور يجب أن تكون 8 أحرف على الأقل')
-      .regex(/[A-Z]/, 'يجب أن تحتوي على حرف كبير')
-      .regex(/[0-9]/, 'يجب أن تحتوي على رقم'),
-    confirm_password: z.string(),
-  })
-  .refine((d) => d.password === d.confirm_password, {
-    path: ['confirm_password'],
-    message: 'كلمتا المرور غير متطابقتين',
-  })
+const getRegisterSchema = (isArabic: boolean) =>
+  z
+    .object({
+      full_name: z
+        .string()
+        .min(2, isArabic ? 'الاسم يجب أن يكون حرفين على الأقل' : 'Name must be at least 2 characters')
+        .max(60),
+      phone: z
+        .string()
+        .regex(
+          egyptianPhone,
+          isArabic ? 'رقم الهاتف غير صحيح (مثال: 01012345678)' : 'Invalid phone number (e.g. 01012345678)'
+        ),
+      email: z.string().email(isArabic ? 'البريد الإلكتروني غير صحيح' : 'Invalid email address'),
+      password: z
+        .string()
+        .min(8, isArabic ? 'كلمة المرور يجب أن تكون 8 أحرف على الأقل' : 'Password must be at least 8 characters')
+        .regex(/[A-Z]/, isArabic ? 'يجب أن تحتوي على حرف كبير' : 'Must contain an uppercase letter')
+        .regex(/[0-9]/, isArabic ? 'يجب أن تحتوي على رقم' : 'Must contain a number'),
+      confirm_password: z.string(),
+      agree_terms: z.literal(true, {
+        errorMap: () => ({
+          message: isArabic
+            ? 'يرجى الموافقة على شروط الاستخدام وسياسة الخصوصية للمتابعة'
+            : 'Please agree to the Terms of Service and Privacy Policy to continue',
+        }),
+      }),
+    })
+    .refine((d) => d.password === d.confirm_password, {
+      path: ['confirm_password'],
+      message: isArabic ? 'كلمتا المرور غير متطابقتين' : 'Passwords do not match',
+    })
 
-type RegisterForm = z.infer<typeof registerSchema>
+type RegisterForm = {
+  full_name: string
+  phone: string
+  email: string
+  password: string
+  confirm_password: string
+  agree_terms: boolean
+}
 
 const PasswordStrength = ({ password }: { password: string }) => {
   const { t } = useTranslation()
@@ -65,12 +86,18 @@ export default function RegisterPage() {
   const [serverError, setServerError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
+  const schema = useMemo(() => getRegisterSchema(isArabic), [isArabic])
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<RegisterForm>({ resolver: zodResolver(registerSchema) })
+  } = useForm<RegisterForm>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      agree_terms: false as unknown as true,
+    },
+  })
 
   const password = watch('password', '')
 
@@ -87,6 +114,7 @@ export default function RegisterPage() {
           phone: data.phone,
           email: data.email,
           password: data.password,
+          agree_terms: data.agree_terms,
         }),
       })
 
@@ -285,6 +313,113 @@ export default function RegisterPage() {
                         {errors.confirm_password.message}
                       </p>
                     )}
+                  </div>
+
+                  {/* Mandatory Policy Consent */}
+                  <div className="pt-1">
+                    <div className="flex items-start gap-2.5">
+                      <div className="flex items-center h-5 mt-0.5">
+                        <input
+                          id="agree_terms"
+                          type="checkbox"
+                          {...register('agree_terms')}
+                          className={`w-4 h-4 rounded cursor-pointer accent-ninja-red transition-all ${
+                            errors.agree_terms
+                              ? 'border-2 border-red-500 ring-2 ring-red-200'
+                              : 'border-gray-300'
+                          }`}
+                        />
+                      </div>
+                      <label
+                        htmlFor="agree_terms"
+                        className="text-xs sm:text-sm text-gray-700 leading-snug cursor-pointer select-none"
+                      >
+                        {isArabic ? (
+                          <>
+                            أوافق على{' '}
+                            <Link
+                              href="/terms"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-500 hover:text-blue-400 underline font-semibold"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              شروط الاستخدام
+                            </Link>{' '}
+                            و{' '}
+                            <Link
+                              href="/privacy"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-500 hover:text-blue-400 underline font-semibold"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              سياسة الخصوصية
+                            </Link>{' '}
+                            و{' '}
+                            <Link
+                              href="/refunds"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-500 hover:text-blue-400 underline font-semibold"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              سياسة الاسترجاع
+                            </Link>
+                          </>
+                        ) : (
+                          <>
+                            I agree to the{' '}
+                            <Link
+                              href="/terms"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-500 hover:text-blue-400 underline font-semibold"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              Terms of Service
+                            </Link>
+                            ,{' '}
+                            <Link
+                              href="/privacy"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-500 hover:text-blue-400 underline font-semibold"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              Privacy Policy
+                            </Link>
+                            , and{' '}
+                            <Link
+                              href="/refunds"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-500 hover:text-blue-400 underline font-semibold"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              Refund Policy
+                            </Link>
+                          </>
+                        )}
+                      </label>
+                    </div>
+
+                    {errors.agree_terms && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-red-500 text-xs mt-1.5 font-bold flex items-center gap-1"
+                      >
+                        <AlertCircle size={14} className="shrink-0" />
+                        <span>{errors.agree_terms.message}</span>
+                      </motion.p>
+                    )}
+
+                    <p className="text-gray-400 text-[11px] sm:text-xs mt-2 leading-relaxed">
+                      {isArabic
+                        ? 'بإنشاء حسابك، أنت تقر بأنك قرأت وفهمت كافة السياسات والشروط المطبقة على طلبات الطعام والتوصيل.'
+                        : 'By creating an account, you acknowledge that you have read and understood all policies and terms applicable to food ordering and delivery.'}
+                    </p>
                   </div>
 
                   {/* Submit */}

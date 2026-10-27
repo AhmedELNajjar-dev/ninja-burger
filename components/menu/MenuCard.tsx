@@ -90,7 +90,7 @@ export function MenuCard({ item, addons, isLoggedIn }: MenuCardProps) {
         {item.image_url ? (
           <img
             src={item.image_url}
-            alt={item.name_ar}
+            alt={isArabic ? item.name_ar : (item.name_en || item.name_ar)}
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
             loading="lazy"
           />
